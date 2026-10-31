@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Stores uploaded documents on disk under a random name and keeps metadata in Oracle.
+ * Stores uploaded documents on disk under a random name and keeps metadata in PostgreSQL.
  * Only PDF, images and plain text are accepted; the stored name never contains user input.
  */
 @Service

@@ -1,15 +1,12 @@
-# Automated tests run against an in-memory H2 database in Oracle compatibility mode,
-# using the same Liquibase scripts as the real Oracle database.
+# Automated tests use an in-memory H2 database in PostgreSQL compatibility mode.
 spring:
   datasource:
-    url: jdbc:h2:mem:careconnect-test;MODE=Oracle;DB_CLOSE_DELAY=-1;DEFAULT_NULL_ORDERING=HIGH
+    url: jdbc:h2:mem:careconnect-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DEFAULT_NULL_ORDERING=HIGH
     username: sa
     password: ""
     driver-class-name: org.h2.Driver
   jpa:
-    # Same dialect as production so tests exercise the exact SQL that runs on Oracle
-    # (the H2 dialect adds "escape ''", which Oracle mode turns into NULL and breaks LIKE).
-    database-platform: org.hibernate.community.dialect.OracleLegacyDialect
+    database-platform: org.hibernate.dialect.H2Dialect
 
 careconnect:
   jwt:

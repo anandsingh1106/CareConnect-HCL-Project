@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Boots the whole application against H2 (Oracle mode) with the same Liquibase scripts and demo data
+ * Boots the whole application against H2 (PostgreSQL mode) with the same Liquibase scripts and demo data
  * as the real database, so tests can log in as the seeded users.
  */
 @SpringBootTest

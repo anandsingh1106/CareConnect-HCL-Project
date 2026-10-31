@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: careconnect-backend
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: PORT
+        value: "10000"
+      - key: DB_HOST
+        fromDatabase:
+          name: careconnect-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: careconnect-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: careconnect-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: careconnect-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: careconnect-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ALLOWED_ORIGINS
+        value: http://localhost:4200
+      - key: UPLOAD_DIR
+        value: /tmp/careconnect-uploads
+
+databases:
+  - name: careconnect-db
+    plan: free
+    region: singapore

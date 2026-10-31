@@ -59,7 +59,7 @@
     <tr><td>Date</td><td>October 2026</td></tr>
     <tr><td>Standard followed</td><td>IEEE Std 830-1998 (adapted)</td></tr>
     <tr><td>Project type</td><td>Academic full-stack project</td></tr>
-    <tr><td>Technology</td><td>Spring Boot 3 · Angular 21 · Oracle Database</td></tr>
+    <tr><td>Technology</td><td>Spring Boot 3 · Angular 21 · PostgreSQL Database</td></tr>
     <tr><td>Status</td><td>Baseline – implemented and tested</td></tr>
   </table>
   <div></div>
@@ -138,7 +138,7 @@
   <h2>2. Overall Description</h2>
   <h3>2.1 Product Perspective</h3>
   <p>CareConnect is a new, self-contained system built as a three-tier web application. A single-page Angular application runs
-  in the browser and talks to a Spring Boot REST API over HTTPS using JSON. The API stores all data in an Oracle database and
+  in the browser and talks to a Spring Boot REST API over HTTPS using JSON. The API stores all data in an PostgreSQL database and
   uploaded documents on the server file system.</p>
   <div class="arch">
     <div class="box"><b>Presentation tier</b>
@@ -148,7 +148,7 @@
       <div class="layer">Spring Security + JWT</div><div class="layer">REST controllers + validation</div><div class="layer">Services · CDS engine · PDF</div><div class="layer">JPA repositories · audit</div></div>
     <div class="arrow">⇄</div>
     <div class="box db"><b>Data tier</b>
-      <div class="layer">Oracle Database</div><div class="layer">29 tables, sequences</div><div class="layer">Constraints · indexes</div><div class="layer">Liquibase migrations</div></div>
+      <div class="layer">PostgreSQL Database</div><div class="layer">29 tables, sequences</div><div class="layer">Constraints · indexes</div><div class="layer">Liquibase migrations</div></div>
   </div>
 
   <h3>2.2 Product Functions</h3>
@@ -179,7 +179,7 @@
   <ul>
     <li><b>Client:</b> any modern browser (Chrome, Edge, Firefox, Safari) on desktop, tablet or phone.</li>
     <li><b>Server:</b> Java 17 or later; Windows or Linux; minimum 2 GB RAM.</li>
-    <li><b>Database:</b> Oracle Database (tested with Oracle XE; later versions supported) on port 1521.</li>
+    <li><b>Database:</b> PostgreSQL 16 or later on port 5432.</li>
     <li><b>Build tools:</b> Maven (wrapper included) and Node.js 20+ with npm.</li>
   </ul>
 
@@ -187,14 +187,14 @@
   <ul>
     <li>Backend: Java 17+, Spring Boot 3.x (Web, Data JPA, Security, Validation), Maven, Lombok, MapStruct.</li>
     <li>Frontend: Angular 17+ with standalone components, reactive forms, guards, interceptors and Angular Material.</li>
-    <li>Database: Oracle only, using sequences for keys, CHECK/unique/foreign-key constraints and indexes; schema changes via Liquibase.</li>
+    <li>Database: PostgreSQL only, using sequences for keys, CHECK/unique/foreign-key constraints and indexes; schema changes via Liquibase.</li>
     <li>Security: JWT access and refresh tokens, BCrypt password hashing, role-based access on both UI and API.</li>
     <li>API documented with OpenAPI (Swagger UI); no secrets hard-coded – configuration through environment variables and profiles.</li>
   </ul>
 
   <h3>2.6 Assumptions and Dependencies</h3>
   <ul>
-    <li>An Oracle database and a schema user with create-table/sequence rights are available before installation.</li>
+    <li>A PostgreSQL database and a schema user with create-table/sequence rights are available before installation.</li>
     <li>Drug, interaction, ICD-10 and lab reference data are loaded as master data and maintained by administrators/pharmacists.</li>
     <li>Users access the system over a trusted network or HTTPS in production.</li>
     <li>The system clock of the server is correct (appointments, audit and token expiry depend on it).</li>
@@ -310,7 +310,7 @@
   <h3>4.2 Software Interfaces</h3>
   <ul>
     <li>REST API over HTTP(S) with JSON bodies, documented with OpenAPI 3 (Swagger UI at <code>/swagger-ui.html</code>); 122 endpoints.</li>
-    <li>Oracle Database through JDBC (Oracle thin driver) and JPA/Hibernate.</li>
+    <li>PostgreSQL Database through JDBC (PostgreSQL thin driver) and JPA/Hibernate.</li>
     <li>Uniform error response: status, error code, message, field errors and details (e.g. CDS alerts).</li>
   </ul>
   <h3>4.3 Communication Interfaces</h3>
@@ -335,12 +335,12 @@
     <tr><td class="id">NFR-08</td><td>Usability</td><td>A new user can complete a core task (e.g. book an appointment) without training; all actions give success/error feedback; forms validate inputs before submission.</td></tr>
     <tr><td class="id">NFR-09</td><td>Portability</td><td>Runs on Windows and Linux; front end works in current versions of major browsers and on mobile screens.</td></tr>
     <tr><td class="id">NFR-10</td><td>Maintainability</td><td>Layered, modular code (controller / service / repository / DTO / mapper per module); database changes only through versioned Liquibase scripts; separate dev, test and prod profiles.</td></tr>
-    <tr><td class="id">NFR-11</td><td>Testability</td><td>Automated unit and integration tests (JUnit 5, Mockito, MockMvc) run without an Oracle installation using an in-memory database in Oracle mode.</td></tr>
+    <tr><td class="id">NFR-11</td><td>Testability</td><td>Automated unit and integration tests (JUnit 5, Mockito, MockMvc) run without a PostgreSQL installation using an in-memory database in PostgreSQL mode.</td></tr>
     <tr><td class="id">NFR-12</td><td>Availability</td><td>The system is stateless on the server side, so it can be restarted or scaled without losing user sessions.</td></tr>
   </table>
 
   <h2>6. Data Requirements</h2>
-  <p>All data is stored in the Oracle schema <code>CARECONNECT</code>. Primary keys are generated from one sequence per table;
+  <p>All data is stored in the PostgreSQL schema <code>CARECONNECT</code>. Primary keys are generated from one sequence per table;
   business numbers use dedicated sequences (<code>mrn_seq</code>, <code>order_no_seq</code>, <code>rx_no_seq</code>). Every
   transactional table carries <code>created_at/by</code>, <code>updated_at/by</code> and a <code>version</code> column.</p>
   <table>
@@ -419,7 +419,7 @@
     <tr><td class="id">AT-09</td><td>A patient can download own visit PDF but gets "not found" for another patient's visit.</td><td>FR-38–39</td></tr>
     <tr><td class="id">AT-10</td><td>Opening a patient chart creates an audit entry visible to the administrator.</td><td>FR-46</td></tr>
   </table>
-  <div class="note">Verification status of this baseline: 39 automated backend tests, a 76-check API run against Oracle and a
+  <div class="note">Verification status of this baseline: 39 automated backend tests, a 76-check API run against PostgreSQL and a
   browser run of all screens for all roles passed. Detailed test cases are listed in <code>docs/test-cases.md</code>.</div>
 
   <h2>Appendix A – Role Access Matrix</h2>

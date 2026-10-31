@@ -3,8 +3,8 @@
 Three levels of testing were used:
 
 1. **Automated backend tests** (JUnit 5 + Mockito + Spring MockMvc) - `cd backend && mvnw test`. They run against an in-memory
-   H2 database in Oracle mode using the same Liquibase scripts and the same Hibernate dialect as production. **39 tests, all passing.**
-2. **API end-to-end run** against the real Oracle database (76 scripted checks covering every module, all passing).
+   H2 database in PostgreSQL mode using the same Liquibase scripts and the PostgreSQL-compatible schema. **39 tests, all passing.**
+2. **API end-to-end run** against the real PostgreSQL database (76 scripted checks covering every module, all passing).
 3. **UI end-to-end run** in a headless browser: every screen for all six roles, plus the full order -> CDS alert -> override ->
    sign note -> verify -> dispense flow (no console errors).
 

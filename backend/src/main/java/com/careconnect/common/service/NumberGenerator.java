@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.time.Year;
 
 /**
- * Generates human-readable, unique business numbers from Oracle sequences:
+ * Generates human-readable, unique business numbers from PostgreSQL sequences:
  * MRN "CC-2026-000123", order "ORD-000123", prescription "RX-000123".
  * Sequences never hand out the same value twice, even under concurrent requests.
  */
@@ -31,7 +31,7 @@ public class NumberGenerator {
 
     private long next(String sequence) {
         // The sequence name is a fixed constant from this class, never user input.
-        Object value = entityManager.createNativeQuery("SELECT " + sequence + ".NEXTVAL FROM dual").getSingleResult();
+        Object value = entityManager.createNativeQuery("SELECT nextval('" + sequence + "')").getSingleResult();
         return ((Number) value).longValue();
     }
 

@@ -1,17 +1,9 @@
-# Local development profile: Oracle XE on this machine (schema CARECONNECT).
-# Every value can still be overridden with an environment variable.
-spring:
-  datasource:
-    url: ${DB_URL:jdbc:oracle:thin:@localhost:1521:XE}
-    username: ${DB_USERNAME:careconnect}
-    password: ${DB_PASSWORD:careconnect}
-
+# Local PostgreSQL development profile.
 careconnect:
   jwt:
-    # Development-only key. Production must set JWT_SECRET (at least 32 characters).
-    secret: ${JWT_SECRET:dev-only-careconnect-jwt-secret-change-me-0123456789}
+    secret: ${JWT_SECRET:careconnect-local-development-secret-change-before-production}
   demo-data:
-    enabled: true   # creates appointment slots for the coming week
+    enabled: true
 
 logging:
   level:

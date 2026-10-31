@@ -17,13 +17,13 @@ flowchart LR
         CTRL["REST controllers<br/>(DTOs, Bean Validation)"]
         SVC["Services<br/>business rules, CDS engine,<br/>pharmacy workflow, PDF"]
         AUD["Audit interceptor<br/>(every patient-data request)"]
-        REPO["Spring Data JPA repositories<br/>(Hibernate, OracleLegacyDialect)"]
+        REPO["Spring Data JPA repositories<br/>(Hibernate, PostgreSQLDialect)"]
         LQB["Liquibase migrations<br/>(schema + seed data)"]
         SEC --> CTRL --> SVC --> REPO
         CTRL -.-> AUD
     end
 
-    DB[("Oracle Database<br/>schema CARECONNECT<br/>sequences, constraints, indexes")]
+    DB[("PostgreSQL<br/>schema CARECONNECT<br/>sequences, constraints, indexes")]
     FS[("File storage<br/>./uploads")]
 
     UI -- "HTTPS / JSON<br/>Authorization: Bearer JWT" --> SEC
@@ -113,22 +113,22 @@ erDiagram
 
     PATIENTS {
         NUMBER id PK
-        VARCHAR2 mrn UK "CC-YYYY-NNNNNN"
-        VARCHAR2 first_name
-        VARCHAR2 last_name
+        VARCHAR mrn UK "CC-YYYY-NNNNNN"
+        VARCHAR first_name
+        VARCHAR last_name
         DATE date_of_birth
-        VARCHAR2 gender "CHECK"
-        VARCHAR2 blood_group "CHECK"
-        VARCHAR2 phone
+        VARCHAR gender "CHECK"
+        VARCHAR blood_group "CHECK"
+        VARCHAR phone
         NUMBER primary_provider_id FK
         NUMBER deleted "soft delete 0/1"
         NUMBER version "optimistic lock"
     }
     APP_USERS {
         NUMBER id PK
-        VARCHAR2 username UK
-        VARCHAR2 password_hash "BCrypt"
-        VARCHAR2 role "CHECK: 6 roles"
+        VARCHAR username UK
+        VARCHAR password_hash "BCrypt"
+        VARCHAR role "CHECK: 6 roles"
         NUMBER department_id FK
         NUMBER patient_id FK "UK, PATIENT role"
         NUMBER active
@@ -137,44 +137,44 @@ erDiagram
         NUMBER id PK
         NUMBER patient_id FK
         NUMBER provider_id FK
-        VARCHAR2 encounter_type
-        VARCHAR2 status "OPEN/CLOSED/CANCELLED"
+        VARCHAR encounter_type
+        VARCHAR status "OPEN/CLOSED/CANCELLED"
         TIMESTAMP encounter_date
     }
     CLINICAL_NOTES {
         NUMBER id PK
         NUMBER encounter_id FK
         NUMBER parent_note_id FK "addendum"
-        CLOB subjective
-        CLOB objective
-        CLOB assessment
-        CLOB plan
-        VARCHAR2 status "DRAFT/SIGNED"
+        TEXT subjective
+        TEXT objective
+        TEXT assessment
+        TEXT plan
+        VARCHAR status "DRAFT/SIGNED"
         TIMESTAMP signed_at
     }
     CLINICAL_ORDERS {
         NUMBER id PK
-        VARCHAR2 order_no UK "ORD-NNNNNN"
-        VARCHAR2 order_type "LAB/IMAGING/MEDICATION/REFERRAL"
-        VARCHAR2 status "DRAFT..COMPLETED"
-        VARCHAR2 priority
-        VARCHAR2 alert_override_reason
+        VARCHAR order_no UK "ORD-NNNNNN"
+        VARCHAR order_type "LAB/IMAGING/MEDICATION/REFERRAL"
+        VARCHAR status "DRAFT..COMPLETED"
+        VARCHAR priority
+        VARCHAR alert_override_reason
     }
     PRESCRIPTIONS {
         NUMBER id PK
-        VARCHAR2 rx_no UK "RX-NNNNNN"
+        VARCHAR rx_no UK "RX-NNNNNN"
         NUMBER order_id FK
         NUMBER drug_id FK
-        VARCHAR2 dose
-        VARCHAR2 frequency
+        VARCHAR dose
+        VARCHAR frequency
         NUMBER quantity
-        VARCHAR2 status "PENDING_VERIFICATION..DISPENSED"
+        VARCHAR status "PENDING_VERIFICATION..DISPENSED"
     }
     DRUGS {
         NUMBER id PK
-        VARCHAR2 code UK
-        VARCHAR2 generic_name
-        VARCHAR2 drug_class
+        VARCHAR code UK
+        VARCHAR generic_name
+        VARCHAR drug_class
         NUMBER stock_qty "CHECK >= 0"
         NUMBER reorder_level
     }
@@ -182,7 +182,7 @@ erDiagram
         NUMBER id PK
         NUMBER order_id FK "UK"
         NUMBER value_numeric
-        VARCHAR2 flag "NORMAL/LOW/HIGH/CRITICAL_*"
+        VARCHAR flag "NORMAL/LOW/HIGH/CRITICAL_*"
     }
 ```
 
@@ -238,7 +238,7 @@ sequenceDiagram
     participant A as Angular (AuthService + interceptor)
     participant S as Spring Security
     participant Auth as AuthService (backend)
-    participant DB as Oracle
+    participant DB as PostgreSQL
 
     U->>A: username + password
     A->>Auth: POST /api/auth/login
@@ -273,7 +273,7 @@ sequenceDiagram
     participant OC as OrderController
     participant OS as OrderService
     participant CDS as CdsService
-    participant DB as Oracle
+    participant DB as PostgreSQL
     participant N as NotificationService
 
     D->>UI: choose drug (e.g. Aspirin for a patient on Warfarin)
@@ -306,7 +306,7 @@ sequenceDiagram
     participant UI as Pharmacy queue (Angular)
     participant PC as PrescriptionController
     participant PS as PrescriptionService
-    participant DB as Oracle
+    participant DB as PostgreSQL
     participant N as NotificationService
 
     P->>UI: open "To verify" tab
