@@ -1,0 +1,8 @@
+# Liquibase master changelog. Scripts run in order, once each, and are recorded in DATABASECHANGELOG.
+databaseChangeLog:
+  - include:
+      file: db/changelog/sql/001-schema.sql
+  - include:
+      file: db/changelog/sql/002-master-data.sql
+  - include:
+      file: db/changelog/sql/003-demo-data.sql

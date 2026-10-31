@@ -1,0 +1,183 @@
+<div class="page">
+  @if (loading()) { <mat-progress-bar mode="indeterminate" /> }
+  @if (detail(); as d) {
+    @let e = d.encounter;
+    <div class="page-header">
+      <div>
+        <a mat-button [routerLink]="['/patients', e.patientId]" class="back"><mat-icon>arrow_back</mat-icon>Patient chart</a>
+        <h1>{{ e.encounterType | label }} visit &middot; {{ e.encounterDate | date: 'dd MMM yyyy, HH:mm' }}</h1>
+        <p>{{ e.providerName }}{{ e.departmentName ? ' · ' + e.departmentName : '' }} &middot; <cc-status [value]="e.status" /></p>
+      </div>
+      <div class="actions">
+        @if (isOpen() && canVitals) { <button mat-stroked-button (click)="recordVitals()"><mat-icon>monitor_heart</mat-icon>Vitals</button> }
+        @if (canDocument()) {
+          <button mat-stroked-button (click)="newOrder()"><mat-icon>add_shopping_cart</mat-icon>New order</button>
+          <button mat-flat-button (click)="close()"><mat-icon>lock</mat-icon>Close encounter</button>
+        }
+      </div>
+    </div>
+
+    @if (patient(); as p) { <cc-patient-banner [patient]="p" [allergies]="allergies()" [link]="true" /> }
+
+    @if (e.chiefComplaint) {
+      <div class="complaint"><mat-icon>record_voice_over</mat-icon><span><strong>Chief complaint:</strong> {{ e.chiefComplaint }}</span></div>
+    }
+
+    <div class="layout">
+      <!-- ============ notes ============ -->
+      <section class="notes">
+        <div class="card-title head">
+          <span>Clinical notes (SOAP)</span>
+          @if (canDocument() && !editorOpen()) {
+            <button mat-flat-button (click)="newNote()"><mat-icon>edit_note</mat-icon>{{ myDraft() ? 'Continue draft' : 'New note' }}</button>
+          }
+        </div>
+
+        @if (editorOpen()) {
+          <form class="card editor" [formGroup]="noteForm" (ngSubmit)="saveNote()">
+            <div class="editor-head">
+              <strong>{{ editing() ? 'Edit draft note' : 'New progress note' }}</strong>
+              <mat-form-field subscriptSizing="dynamic" class="tpl">
+                <mat-label>Template</mat-label>
+                <mat-select formControlName="templateCode" (selectionChange)="applyTemplate($event.value)">
+                  <mat-option value="">None</mat-option>
+                  @for (t of templates(); track t.code) { <mat-option [value]="t.code">{{ t.name }}</mat-option> }
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <mat-form-field><mat-label>S - Subjective</mat-label><textarea matInput rows="3" formControlName="subjective" placeholder="History, symptoms in the patient's words"></textarea></mat-form-field>
+            <mat-form-field><mat-label>O - Objective</mat-label><textarea matInput rows="3" formControlName="objective" placeholder="Examination findings, vitals, results"></textarea></mat-form-field>
+            <mat-form-field><mat-label>A - Assessment</mat-label><textarea matInput rows="2" formControlName="assessment" placeholder="Diagnosis / clinical impression"></textarea></mat-form-field>
+            <mat-form-field><mat-label>P - Plan</mat-label><textarea matInput rows="3" formControlName="plan" placeholder="Treatment, investigations, follow-up"></textarea></mat-form-field>
+            <div class="actions end">
+              <button mat-button type="button" (click)="cancelEdit()">Cancel</button>
+              <button mat-stroked-button type="submit" [disabled]="saving()"><mat-icon>save</mat-icon>Save draft</button>
+              <button mat-flat-button type="button" [disabled]="saving()" (click)="saveNote(true)"><mat-icon>draw</mat-icon>Save &amp; sign</button>
+            </div>
+          </form>
+        }
+
+        @for (item of noteTree(); track item.note.id) {
+          @let n = item.note;
+          <article class="card note" [class.draft]="n.status === 'DRAFT'">
+            <header>
+              <div>
+                <strong>{{ n.authorName }}</strong>
+                <span class="muted small"> &middot; {{ n.createdAt | date: 'dd MMM yyyy, HH:mm' }}</span>
+                @if (n.templateCode) { <span class="chip">{{ n.templateCode | label }}</span> }
+              </div>
+              <div class="actions">
+                <cc-status [value]="n.status" />
+                @if (n.status === 'DRAFT' && canDocument() && n.authorId === myDraft()?.authorId && !editorOpen()) {
+                  <button mat-icon-button matTooltip="Edit draft" (click)="edit(n)"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button matTooltip="Sign" (click)="sign(n)"><mat-icon>draw</mat-icon></button>
+                }
+                @if (n.status === 'SIGNED' && isDoctor) {
+                  <button mat-icon-button matTooltip="Add addendum" (click)="startAddendum(n)"><mat-icon>post_add</mat-icon></button>
+                }
+              </div>
+            </header>
+            <dl class="soap">
+              @if (n.subjective) { <dt>S</dt><dd>{{ n.subjective }}</dd> }
+              @if (n.objective) { <dt>O</dt><dd>{{ n.objective }}</dd> }
+              @if (n.assessment) { <dt>A</dt><dd>{{ n.assessment }}</dd> }
+              @if (n.plan) { <dt>P</dt><dd>{{ n.plan }}</dd> }
+            </dl>
+            @if (n.signedAt) { <div class="signed"><mat-icon>verified</mat-icon>Electronically signed by {{ n.signedByName }} on {{ n.signedAt | date: 'dd MMM yyyy, HH:mm' }}</div> }
+
+            @for (a of item.addenda; track a.id) {
+              <div class="addendum">
+                <div class="small"><mat-icon inline>post_add</mat-icon> <strong>Addendum</strong> by {{ a.authorName }} &middot; {{ a.createdAt | date: 'dd MMM yyyy, HH:mm' }}</div>
+                <div class="pre">{{ soapText(a) }}</div>
+              </div>
+            }
+
+            @if (addendumFor()?.id === n.id) {
+              <div class="add-form">
+                <mat-form-field>
+                  <mat-label>Addendum text</mat-label>
+                  <textarea matInput rows="3" [formControl]="addendumText" placeholder="Correction or additional information"></textarea>
+                </mat-form-field>
+                <div class="actions end">
+                  <button mat-button (click)="addendumFor.set(null)">Cancel</button>
+                  <button mat-flat-button (click)="saveAddendum()"><mat-icon>draw</mat-icon>Sign addendum</button>
+                </div>
+              </div>
+            }
+          </article>
+        } @empty {
+          @if (!editorOpen()) { <div class="card empty"><mat-icon>edit_note</mat-icon>No notes yet for this encounter.</div> }
+        }
+      </section>
+
+      <!-- ============ side panel ============ -->
+      <aside class="side">
+        <section class="card">
+          <h3 class="card-title">Diagnoses <mat-icon>diagnosis</mat-icon></h3>
+          @for (dx of d.diagnoses; track dx.id) {
+            <div class="row">
+              <span class="mono code">{{ dx.icd10Code }}</span>
+              <span class="grow">{{ dx.description }}</span>
+              <cc-status [value]="dx.diagnosisType" />
+              @if (canDocument()) {
+                <button mat-icon-button (click)="removeDiagnosis(dx.id, dx.icd10Code)" matTooltip="Remove"><mat-icon>close</mat-icon></button>
+              }
+            </div>
+          } @empty { <p class="muted small">No diagnosis recorded.</p> }
+          @if (canDocument()) {
+            <div class="dx-add">
+              <cc-icd10-picker #picker [dense]="true" (selected)="dxCode = $event" />
+              <div class="actions">
+                <mat-form-field subscriptSizing="dynamic" class="dx-type">
+                  <mat-select [(ngModel)]="dxType">
+                    <mat-option value="PRIMARY">Primary</mat-option>
+                    <mat-option value="SECONDARY">Secondary</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <button mat-stroked-button (click)="addDiagnosis(picker)"><mat-icon>add</mat-icon>Add</button>
+              </div>
+            </div>
+          }
+        </section>
+
+        <section class="card">
+          <h3 class="card-title">Vitals <mat-icon>monitor_heart</mat-icon></h3>
+          @for (v of d.vitals; track v.id) {
+            <div class="vital">
+              <div class="muted small">{{ v.recordedAt | date: 'dd MMM, HH:mm' }} &middot; {{ v.recordedByName }}</div>
+              <div class="vgrid">
+                @if (v.systolic) { <span><b>{{ v.systolic }}/{{ v.diastolic }}</b> BP</span> }
+                @if (v.pulse) { <span><b>{{ v.pulse }}</b> pulse</span> }
+                @if (v.temperature) { <span><b>{{ v.temperature }}&deg;C</b> temp</span> }
+                @if (v.spo2) { <span><b>{{ v.spo2 }}%</b> SpO2</span> }
+                @if (v.respRate) { <span><b>{{ v.respRate }}</b> RR</span> }
+                @if (v.weightKg) { <span><b>{{ v.weightKg }} kg</b> wt</span> }
+                @if (v.bmi) { <span><b>{{ v.bmi }}</b> BMI</span> }
+              </div>
+            </div>
+          } @empty { <p class="muted small">No vitals recorded in this visit.</p> }
+        </section>
+
+        <section class="card">
+          <h3 class="card-title">Orders <mat-icon>science</mat-icon></h3>
+          @for (o of orders(); track o.id) {
+            <div class="row order" (click)="orderActions.view(o)">
+              <div class="grow">
+                <div><strong>{{ o.summary }}</strong></div>
+                <div class="muted small mono">{{ o.orderNo }} &middot; {{ o.orderType | label }}</div>
+              </div>
+              <cc-status [value]="o.status" />
+              <button mat-icon-button [matMenuTriggerFor]="om" (click)="$event.stopPropagation()"><mat-icon>more_vert</mat-icon></button>
+              <mat-menu #om="matMenu">
+                <button mat-menu-item (click)="orderActions.view(o)"><mat-icon>visibility</mat-icon>Details</button>
+                @if (orderActions.canResult(o)) { <button mat-menu-item (click)="orderActions.enterResult(o, reload)"><mat-icon>edit_note</mat-icon>Enter result</button> }
+                @if (orderActions.canPlace(o)) { <button mat-menu-item (click)="orderActions.place(o, reload)"><mat-icon>send</mat-icon>Place order</button> }
+                @if (orderActions.canCancel(o)) { <button mat-menu-item (click)="orderActions.cancel(o, reload)"><mat-icon>cancel</mat-icon>Cancel</button> }
+              </mat-menu>
+            </div>
+          } @empty { <p class="muted small">No orders in this visit.</p> }
+        </section>
+      </aside>
+    </div>
+  }
+</div>

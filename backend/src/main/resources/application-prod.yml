@@ -1,0 +1,17 @@
+# Production profile: every connection setting and secret must come from the environment
+# (DB_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET, CORS_ALLOWED_ORIGINS, UPLOAD_DIR).
+# On Oracle 12c or newer you may switch to the standard dialect:
+#   SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.OracleDialect
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+careconnect:
+  demo-data:
+    enabled: false
+
+logging:
+  level:
+    com.careconnect: INFO

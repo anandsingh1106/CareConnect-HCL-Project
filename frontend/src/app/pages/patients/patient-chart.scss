@@ -1,0 +1,16 @@
+.back { margin-left: -12px; }
+.tabs { margin-top: 18px; }
+.tab-body { padding: 18px 2px; }
+.full { grid-column: 1 / -1; }
+.line { padding: 7px 0; border-bottom: 1px solid var(--cc-border); display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  &:last-child { border-bottom: none; } }
+.code { font-weight: 700; color: var(--cc-primary); }
+.vitals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  div { background: #f5f8fb; border-radius: 10px; padding: 8px 12px; } small { display: block; color: var(--cc-muted); font-size: .75rem; } b { font-size: 1.15rem; } }
+.enc { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: 10px; text-decoration: none; color: inherit;
+  &:hover { background: #f2f7fd; } }
+tr.click { cursor: pointer; &:hover td { background: #f2f7fd; } }
+tr.inactive td { opacity: .6; }
+td.abn { color: var(--cc-danger); font-weight: 700; }
+.upload { display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  mat-form-field { width: 200px; } .desc { flex: 1; min-width: 200px; } }

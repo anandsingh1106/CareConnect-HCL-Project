@@ -1,0 +1,323 @@
+<div class="page">
+  @if (patient(); as p) {
+    <div class="page-header">
+      <a mat-button routerLink="/patients" class="back"><mat-icon>arrow_back</mat-icon>Patients</a>
+      <div class="actions">
+        @if (canEditDemographics) { <a mat-stroked-button [routerLink]="['/patients', p.id, 'edit']"><mat-icon>edit</mat-icon>Edit details</a> }
+        @if (canSchedule) { <button mat-stroked-button (click)="bookAppointment()"><mat-icon>calendar_add_on</mat-icon>Book appointment</button> }
+        @if (canEditHistory) { <button mat-stroked-button (click)="recordVitals()"><mat-icon>monitor_heart</mat-icon>Record vitals</button> }
+        @if (canEditHistory) { <button mat-flat-button (click)="startEncounter()"><mat-icon>add</mat-icon>Start encounter</button> }
+      </div>
+    </div>
+
+    <cc-patient-banner [patient]="p" [allergies]="activeAllergies()" />
+
+    <mat-tab-group class="tabs" mat-stretch-tabs="false" animationDuration="150ms">
+      <!-- ================= OVERVIEW ================= -->
+      @if (clinical) {
+        <mat-tab label="Overview">
+          @if (summary(); as s) {
+            <div class="grid grid-2 tab-body">
+              <section class="card">
+                <h3 class="card-title">Active problems <mat-icon>list_alt</mat-icon></h3>
+                @for (pr of s.problems; track pr.id) {
+                  <div class="line"><span class="mono code">{{ pr.icd10Code }}</span> {{ pr.description }}
+                    @if (pr.onsetDate) { <span class="muted small">since {{ pr.onsetDate | date: 'MMM yyyy' }}</span> }</div>
+                } @empty { <p class="muted">No active problems.</p> }
+              </section>
+              <section class="card">
+                <h3 class="card-title">Current medications <mat-icon>medication</mat-icon></h3>
+                @for (m of s.activeMedications; track m.id) {
+                  <div class="line"><strong>{{ m.drugName }}</strong> {{ m.dose }} &middot; {{ m.frequency }} <cc-status [value]="m.status" /></div>
+                } @empty { <p class="muted">No active medicines.</p> }
+              </section>
+              <section class="card">
+                <h3 class="card-title">Latest vitals <mat-icon>monitor_heart</mat-icon></h3>
+                @if (s.latestVitals; as v) {
+                  <div class="vitals">
+                    <div><small>BP</small><b>{{ v.systolic ?? '-' }}/{{ v.diastolic ?? '-' }}</b></div>
+                    <div><small>Pulse</small><b>{{ v.pulse ?? '-' }}</b></div>
+                    <div><small>Temp</small><b>{{ v.temperature ?? '-' }}</b></div>
+                    <div><small>SpO2</small><b>{{ v.spo2 ?? '-' }}</b></div>
+                    <div><small>Weight</small><b>{{ v.weightKg ?? '-' }}</b></div>
+                    <div><small>BMI</small><b>{{ v.bmi ?? '-' }}</b></div>
+                  </div>
+                  <p class="muted small">{{ v.recordedAt | date: 'dd MMM yyyy, HH:mm' }} &middot; {{ v.recordedByName }}</p>
+                } @else { <p class="muted">No vitals recorded.</p> }
+              </section>
+              <section class="card">
+                <h3 class="card-title">Open encounters <mat-icon>clinical_notes</mat-icon></h3>
+                @for (e of s.openEncounters; track e.id) {
+                  <a class="enc" [routerLink]="['/encounters', e.id]">
+                    <div><strong>{{ e.encounterType | label }}</strong> &middot; {{ e.encounterDate | date: 'dd MMM, HH:mm' }}<div class="muted small">{{ e.chiefComplaint }} &middot; {{ e.providerName }}</div></div>
+                    <mat-icon>chevron_right</mat-icon>
+                  </a>
+                } @empty { <p class="muted">No open encounters.</p> }
+              </section>
+              @if (p.medicalHistory) {
+                <section class="card full">
+                  <h3 class="card-title">Past medical history <mat-icon>history</mat-icon></h3>
+                  <p class="pre">{{ p.medicalHistory }}</p>
+                </section>
+              }
+            </div>
+          } @else { <mat-progress-bar mode="indeterminate" /> }
+        </mat-tab>
+
+        <!-- ================= HISTORY ================= -->
+        <mat-tab label="History">
+          <div class="grid grid-2 tab-body">
+            <section class="card">
+              <h3 class="card-title">Allergies
+                @if (canEditHistory) { <button mat-stroked-button (click)="editHistory('allergy')"><mat-icon>add</mat-icon>Add</button> }</h3>
+              <table class="simple">
+                <tr><th>Allergen</th><th>Reaction</th><th>Severity</th><th>Status</th><th></th></tr>
+                @for (a of allergies(); track a.id) {
+                  <tr><td><strong>{{ a.allergen }}</strong><div class="muted small">{{ a.allergyType | label }}</div></td><td>{{ a.reaction }}</td>
+                    <td><cc-status [value]="a.severity" /></td><td><cc-status [value]="a.status" /></td>
+                    <td class="right">@if (canEditHistory) { <button mat-icon-button (click)="editHistory('allergy', a)"><mat-icon>edit</mat-icon></button> }</td></tr>
+                } @empty { <tr><td colspan="5" class="muted">No known allergies (NKDA).</td></tr> }
+              </table>
+            </section>
+            <section class="card">
+              <h3 class="card-title">Problem list
+                @if (isDoctor) { <button mat-stroked-button (click)="editHistory('problem')"><mat-icon>add</mat-icon>Add</button> }</h3>
+              <table class="simple">
+                <tr><th>Problem</th><th>Onset</th><th>Status</th><th></th></tr>
+                @for (pr of problems(); track pr.id) {
+                  <tr><td><span class="mono code">{{ pr.icd10Code }}</span> {{ pr.description }}</td><td>{{ pr.onsetDate | date: 'dd MMM yyyy' }}</td>
+                    <td><cc-status [value]="pr.status" /></td>
+                    <td class="right">@if (isDoctor) { <button mat-icon-button (click)="editHistory('problem', pr)"><mat-icon>edit</mat-icon></button> }</td></tr>
+                } @empty { <tr><td colspan="4" class="muted">No problems recorded.</td></tr> }
+              </table>
+            </section>
+            <section class="card">
+              <h3 class="card-title">Immunizations
+                @if (canEditHistory) { <button mat-stroked-button (click)="editHistory('immunization')"><mat-icon>add</mat-icon>Add</button> }</h3>
+              <table class="simple">
+                <tr><th>Vaccine</th><th>Dose</th><th>Date</th><th>By</th><th></th></tr>
+                @for (i of immunizations(); track i.id) {
+                  <tr><td><strong>{{ i.vaccineName }}</strong>@if (i.lotNumber) { <div class="muted small">Lot {{ i.lotNumber }}</div> }</td><td>{{ i.doseNumber }}</td>
+                    <td>{{ i.administeredOn | date: 'dd MMM yyyy' }}</td><td>{{ i.administeredBy }}</td>
+                    <td class="right">@if (canEditHistory) { <button mat-icon-button (click)="editHistory('immunization', i)"><mat-icon>edit</mat-icon></button> }</td></tr>
+                } @empty { <tr><td colspan="5" class="muted">No immunizations recorded.</td></tr> }
+              </table>
+            </section>
+            <section class="card">
+              <h3 class="card-title">Family history
+                @if (canEditHistory) { <button mat-stroked-button (click)="editHistory('family')"><mat-icon>add</mat-icon>Add</button> }</h3>
+              <table class="simple">
+                <tr><th>Relation</th><th>Condition</th><th>Notes</th><th></th></tr>
+                @for (f of family(); track f.id) {
+                  <tr><td>{{ f.relation }}</td><td><strong>{{ f.conditionName }}</strong></td><td>{{ f.notes }}</td>
+                    <td class="right">@if (canEditHistory) { <button mat-icon-button (click)="editHistory('family', f)"><mat-icon>edit</mat-icon></button> }</td></tr>
+                } @empty { <tr><td colspan="4" class="muted">No family history recorded.</td></tr> }
+              </table>
+            </section>
+          </div>
+        </mat-tab>
+
+        <!-- ================= ENCOUNTERS ================= -->
+        <mat-tab label="Encounters">
+          <div class="tab-body">
+            <div class="table-wrap">
+              <table class="simple">
+                <tr><th>Date</th><th>Type</th><th>Complaint / diagnosis</th><th>Doctor</th><th>Status</th><th></th></tr>
+                @for (e of encounters(); track e.id) {
+                  <tr class="click" [routerLink]="['/encounters', e.id]">
+                    <td class="nowrap">{{ e.encounterDate | date: 'dd MMM yyyy' }}</td><td>{{ e.encounterType | label }}</td>
+                    <td>{{ e.chiefComplaint }}@if (e.primaryDiagnosis) { <div class="muted small">Dx: {{ e.primaryDiagnosis }}</div> }</td>
+                    <td>{{ e.providerName }}</td><td><cc-status [value]="e.status" /></td>
+                    <td class="right">
+                      @if (isDoctor && e.status === 'OPEN') {
+                        <button mat-stroked-button (click)="$event.stopPropagation(); newOrder(e)"><mat-icon>add</mat-icon>Order</button>
+                      }
+                    </td>
+                  </tr>
+                } @empty { <tr><td colspan="6" class="muted">No encounters yet.</td></tr> }
+              </table>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- ================= VITALS ================= -->
+        <mat-tab label="Vitals">
+          <div class="tab-body">
+            <section class="card">
+              <h3 class="card-title">Vital sign trends
+                @if (canEditHistory) { <button mat-stroked-button (click)="recordVitals()"><mat-icon>add</mat-icon>Record</button> }</h3>
+              @if (vitalsChart(); as cfg) { <cc-chart [config]="cfg" height="320px" /> } @else { <div class="empty"><mat-icon>show_chart</mat-icon>No vitals yet.</div> }
+            </section>
+            <div class="table-wrap mt">
+              <table class="simple">
+                <tr><th>Recorded</th><th>BP</th><th>Pulse</th><th>Temp &deg;C</th><th>RR</th><th>SpO2</th><th>Weight</th><th>BMI</th><th>By</th></tr>
+                @for (v of vitals(); track v.id) {
+                  <tr><td class="nowrap">{{ v.recordedAt | date: 'dd MMM yyyy, HH:mm' }}</td>
+                    <td [class.abn]="(v.systolic ?? 0) >= 140 || (v.diastolic ?? 0) >= 90">{{ v.systolic ? v.systolic + '/' + v.diastolic : '' }}</td>
+                    <td>{{ v.pulse }}</td><td [class.abn]="(v.temperature ?? 0) >= 38">{{ v.temperature }}</td><td>{{ v.respRate }}</td>
+                    <td [class.abn]="v.spo2 !== undefined && v.spo2 !== null && v.spo2 < 94">{{ v.spo2 }}</td><td>{{ v.weightKg }}</td><td>{{ v.bmi }}</td><td>{{ v.recordedByName }}</td></tr>
+                }
+              </table>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- ================= ORDERS & RESULTS ================= -->
+        <mat-tab label="Orders & results">
+          <div class="grid grid-2 tab-body">
+            <section class="card">
+              <h3 class="card-title">Orders</h3>
+              <table class="simple">
+                <tr><th>Order</th><th>Status</th><th></th></tr>
+                @for (o of orders(); track o.id) {
+                  <tr><td><strong>{{ o.summary }}</strong><div class="muted small"><span class="mono">{{ o.orderNo }}</span> &middot; {{ o.orderedByName }} &middot; {{ o.createdAt | date: 'dd MMM' }}</div></td>
+                    <td><cc-status [value]="o.status" /></td>
+                    <td class="right nowrap">
+                      <button mat-icon-button [matMenuTriggerFor]="om"><mat-icon>more_vert</mat-icon></button>
+                      <mat-menu #om="matMenu">
+                        <button mat-menu-item (click)="orderActions.view(o)"><mat-icon>visibility</mat-icon>Details</button>
+                        @if (orderActions.canResult(o)) { <button mat-menu-item (click)="orderActions.enterResult(o, reloadOrders)"><mat-icon>edit_note</mat-icon>Enter result</button> }
+                        @if (orderActions.canCancel(o)) { <button mat-menu-item (click)="orderActions.cancel(o, reloadOrders)"><mat-icon>cancel</mat-icon>Cancel</button> }
+                      </mat-menu>
+                    </td></tr>
+                } @empty { <tr><td colspan="3" class="muted">No orders.</td></tr> }
+              </table>
+            </section>
+            <section class="card">
+              <h3 class="card-title">Lab &amp; imaging results</h3>
+              <table class="simple">
+                <tr><th>Test</th><th>Result</th><th>Flag</th><th>Date</th></tr>
+                @for (r of results(); track r.id) {
+                  <tr><td><strong>{{ r.testName }}</strong>@if (r.referenceRange) { <div class="muted small">Ref {{ r.referenceRange }}</div> }</td>
+                    <td>{{ r.valueNumeric ?? '' }} {{ r.unit }}@if (r.valueText) { <div class="small">{{ r.valueText }}</div> }</td>
+                    <td><cc-status [value]="r.flag" /></td><td class="nowrap">{{ r.resultedAt | date: 'dd MMM yyyy' }}</td></tr>
+                } @empty { <tr><td colspan="4" class="muted">No results yet.</td></tr> }
+              </table>
+            </section>
+          </div>
+        </mat-tab>
+
+        <!-- ================= MEDICATIONS ================= -->
+        <mat-tab label="Medications">
+          <div class="tab-body">
+            <section class="card">
+              <h3 class="card-title">Prescriptions
+                <mat-slide-toggle [checked]="activeMedsOnly()" (change)="activeMedsOnly.set($event.checked)">Active only</mat-slide-toggle></h3>
+              <div class="table-wrap">
+                <table class="simple">
+                  <tr><th>Rx</th><th>Medicine</th><th>Sig</th><th>Prescriber</th><th>Status</th><th></th></tr>
+                  @for (m of shownMeds(); track m.id) {
+                    <tr [class.inactive]="!m.currentlyActive">
+                      <td class="mono">{{ m.rxNo }}</td>
+                      <td><strong>{{ m.drugName }}</strong><div class="muted small">{{ m.genericName }}</div></td>
+                      <td>{{ m.dose }} &middot; {{ m.route | label }} &middot; {{ m.frequency }} &times; {{ m.durationDays }}d<div class="muted small">{{ m.instructions }}</div></td>
+                      <td>{{ m.prescriberName }}<div class="muted small">{{ m.createdAt | date: 'dd MMM yyyy' }}</div></td>
+                      <td><cc-status [value]="m.status" />@if (m.discontinueReason) { <div class="muted small">{{ m.discontinueReason }}</div> }</td>
+                      <td class="right nowrap">
+                        @if (isDoctor && m.currentlyActive) {
+                          <button mat-icon-button matTooltip="Modify" (click)="modify(m)"><mat-icon>tune</mat-icon></button>
+                          <button mat-icon-button matTooltip="Discontinue" (click)="discontinue(m)"><mat-icon>block</mat-icon></button>
+                        }
+                      </td>
+                    </tr>
+                  } @empty { <tr><td colspan="6" class="muted">No prescriptions.</td></tr> }
+                </table>
+              </div>
+            </section>
+            <section class="card mt">
+              <h3 class="card-title">Medication administration record (MAR)
+                @if (isNurse) { <a mat-stroked-button routerLink="/nursing" [queryParams]="{ patientId: p.id }"><mat-icon>medication</mat-icon>Give medicines</a> }</h3>
+              <table class="simple">
+                <tr><th>Time</th><th>Medicine</th><th>Dose</th><th>Status</th><th>Nurse</th><th>Notes</th></tr>
+                @for (a of mar(); track a.id) {
+                  <tr><td class="nowrap">{{ a.administeredAt | date: 'dd MMM, HH:mm' }}</td><td>{{ a.drugName }} <span class="muted small mono">{{ a.rxNo }}</span></td>
+                    <td>{{ a.doseGiven }} {{ a.route | label }}</td><td><cc-status [value]="a.status" /></td><td>{{ a.administeredByName }}</td><td>{{ a.notes }}</td></tr>
+                } @empty { <tr><td colspan="6" class="muted">No doses documented.</td></tr> }
+              </table>
+            </section>
+          </div>
+        </mat-tab>
+
+        <!-- ================= DOCUMENTS ================= -->
+        <mat-tab label="Documents">
+          <div class="tab-body">
+            @if (canUpload) {
+              <div class="card upload">
+                <mat-form-field subscriptSizing="dynamic">
+                  <mat-label>Category</mat-label>
+                  <mat-select [(ngModel)]="uploadCategory">
+                    @for (c of ['LAB_REPORT', 'IMAGING', 'REFERRAL', 'CONSENT', 'OTHER']; track c) { <mat-option [value]="c">{{ c | label }}</mat-option> }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field subscriptSizing="dynamic" class="desc">
+                  <mat-label>Description</mat-label>
+                  <input matInput [(ngModel)]="uploadDescription" maxlength="255" />
+                </mat-form-field>
+                <input #file type="file" hidden (change)="onFile($event)" accept=".pdf,.png,.jpg,.jpeg,.txt,.doc,.docx" />
+                <button mat-flat-button (click)="file.click()" [disabled]="uploading()"><mat-icon>upload_file</mat-icon>Upload file</button>
+              </div>
+              @if (uploading()) { <mat-progress-bar mode="indeterminate" /> }
+            }
+            <div class="table-wrap mt">
+              <table class="simple">
+                <tr><th>File</th><th>Category</th><th>Size</th><th>Uploaded</th><th></th></tr>
+                @for (d of documents(); track d.id) {
+                  <tr><td><strong>{{ d.fileName }}</strong><div class="muted small">{{ d.description }}</div></td><td>{{ d.category | label }}</td>
+                    <td>{{ fileSize(d.sizeBytes) }}</td><td>{{ d.uploadedAt | date: 'dd MMM yyyy' }} &middot; {{ d.uploadedBy }}</td>
+                    <td class="right nowrap">
+                      <button mat-icon-button matTooltip="Download" (click)="download(d)"><mat-icon>download</mat-icon></button>
+                      @if (canDeleteDocs) { <button mat-icon-button matTooltip="Delete" (click)="deleteDocument(d)"><mat-icon>delete</mat-icon></button> }
+                    </td></tr>
+                } @empty { <tr><td colspan="5" class="muted">No documents uploaded.</td></tr> }
+              </table>
+            </div>
+          </div>
+        </mat-tab>
+      }
+
+      <!-- ================= APPOINTMENTS ================= -->
+      @if (canSchedule) {
+        <mat-tab label="Appointments">
+          <div class="tab-body table-wrap">
+            <table class="simple">
+              <tr><th>Date &amp; time</th><th>Doctor</th><th>Type</th><th>Reason</th><th>Status</th></tr>
+              @for (a of appointments(); track a.id) {
+                <tr><td class="nowrap">{{ a.startTime | date: 'EEE dd MMM yyyy, HH:mm' }}</td><td>{{ a.providerName }}</td><td>{{ a.appointmentType | label }}</td>
+                  <td>{{ a.reason }}</td><td><cc-status [value]="a.status" /></td></tr>
+              } @empty { <tr><td colspan="5" class="muted">No appointments.</td></tr> }
+            </table>
+          </div>
+        </mat-tab>
+      }
+
+      <!-- ================= PROFILE ================= -->
+      <mat-tab label="Profile">
+        <div class="grid grid-3 tab-body">
+          <section class="card">
+            <h3 class="card-title">Contact</h3>
+            <dl class="kv">
+              <dt>Phone</dt><dd>{{ p.phone }}</dd><dt>Email</dt><dd>{{ p.email || '-' }}</dd>
+              <dt>Address</dt><dd>{{ p.addressLine || '-' }}<br />{{ p.city }} {{ p.stateName }} {{ p.postalCode }}</dd>
+            </dl>
+          </section>
+          <section class="card">
+            <h3 class="card-title">Emergency contact</h3>
+            <dl class="kv"><dt>Name</dt><dd>{{ p.emergencyName || '-' }}</dd><dt>Relation</dt><dd>{{ p.emergencyRelation || '-' }}</dd><dt>Phone</dt><dd>{{ p.emergencyPhone || '-' }}</dd></dl>
+          </section>
+          <section class="card">
+            <h3 class="card-title">Insurance</h3>
+            <dl class="kv"><dt>Provider</dt><dd>{{ p.insuranceProvider || '-' }}</dd><dt>Policy</dt><dd>{{ p.insurancePolicyNo || '-' }}</dd>
+              <dt>Valid till</dt><dd>{{ (p.insuranceValidTill | date: 'dd MMM yyyy') || '-' }}</dd></dl>
+          </section>
+          <section class="card">
+            <h3 class="card-title">Record</h3>
+            <dl class="kv"><dt>MRN</dt><dd class="mono">{{ p.mrn }}</dd><dt>Registered</dt><dd>{{ p.createdAt | date: 'dd MMM yyyy' }}</dd>
+              <dt>Last update</dt><dd>{{ (p.updatedAt | date: 'dd MMM yyyy, HH:mm') || '-' }}</dd></dl>
+          </section>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  } @else {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>

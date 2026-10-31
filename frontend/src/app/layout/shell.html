@@ -1,0 +1,79 @@
+<mat-sidenav-container class="container">
+  <mat-sidenav class="sidenav" [mode]="isMobile() ? 'over' : 'side'" [opened]="navOpen()"
+               (closedStart)="navOpen.set(false)">
+    <a class="brand" routerLink="/dashboard">
+      <span class="logo"><mat-icon>ecg_heart</mat-icon></span>
+      <span>Care<b>Connect</b></span>
+    </a>
+    <nav>
+      @for (group of nav(); track $index) {
+        @if (group.title) { <div class="group-title">{{ group.title }}</div> }
+        @for (item of group.items; track item.link) {
+          <a class="nav-item" [routerLink]="item.link" routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: !!item.exact }">
+            <mat-icon>{{ item.icon }}</mat-icon>
+            <span>{{ item.label }}</span>
+          </a>
+        }
+      }
+    </nav>
+    <div class="side-footer">
+      <mat-icon>verified_user</mat-icon>
+      <span>Access is logged for audit.</span>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content">
+    <mat-toolbar class="toolbar">
+      <button mat-icon-button (click)="navOpen.set(!navOpen())" aria-label="Toggle menu"><mat-icon>menu</mat-icon></button>
+      <span class="role-chip chip primary">{{ auth.role() | label }}</span>
+      <span class="spacer"></span>
+
+      <button mat-icon-button class="theme-toggle" (click)="toggleTheme()" [matTooltip]="darkMode() ? 'Switch to light mode' : 'Switch to dark mode'" [attr.aria-label]="darkMode() ? 'Switch to light mode' : 'Switch to dark mode'"><mat-icon>{{ darkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon></button>
+      <button mat-icon-button [matMenuTriggerFor]="bell" (menuOpened)="loadNotifications()" aria-label="Notifications"
+              matTooltip="Notifications">
+        <mat-icon [matBadge]="unread() || null" matBadgeColor="warn" matBadgeSize="small">notifications</mat-icon>
+      </button>
+      <mat-menu #bell="matMenu" class="bell-menu" xPosition="before">
+        <div class="bell-head" (click)="$event.stopPropagation()">
+          <strong>Notifications</strong>
+          @if (unread()) { <button mat-button (click)="markAllRead()">Mark all read</button> }
+        </div>
+        <mat-divider />
+        @for (n of notifications(); track n.id) {
+          <button mat-menu-item class="note" [class.unread]="!n.read" (click)="openNotification(n)">
+            <mat-icon>{{ notificationIcon(n.type) }}</mat-icon>
+            <div class="note-body">
+              <div class="note-title">{{ n.title }}</div>
+              <div class="note-msg">{{ n.message }}</div>
+              <div class="note-time">{{ n.createdAt | date: 'dd MMM, HH:mm' }}</div>
+            </div>
+          </button>
+        } @empty {
+          <div class="bell-empty">You're all caught up.</div>
+        }
+      </mat-menu>
+
+      <button mat-button class="user-btn" [matMenuTriggerFor]="userMenu">
+        <span class="avatar">{{ initials() }}</span>
+        <span class="user-name">{{ auth.user()?.fullName }}</span>
+        <mat-icon iconPositionEnd>expand_more</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu" xPosition="before">
+        <div class="user-card" (click)="$event.stopPropagation()">
+          <strong>{{ auth.user()?.fullName }}</strong>
+          <span class="muted small">{{ auth.user()?.username }} &middot; {{ auth.role() | label }}</span>
+          @if (auth.user()?.departmentName) { <span class="muted small">{{ auth.user()?.departmentName }}</span> }
+        </div>
+        <mat-divider />
+        <button mat-menu-item (click)="changePassword()"><mat-icon>key</mat-icon>Change password</button>
+        <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon>Sign out</button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <main>
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+

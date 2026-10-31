@@ -1,0 +1,20 @@
+.toolbar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.prov { width: 320px; max-width: 100%; }
+.datenav { display: flex; align-items: center; gap: 4px; }
+.date { width: 170px; }
+.layout { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(0, 1.3fr); gap: 16px; align-items: start; }
+.legend { display: flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--cc-muted); margin-bottom: 10px;
+  .sw { width: 12px; height: 12px; border-radius: 3px; margin-left: 8px; } }
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; }
+.slot, .sw { background: #e3f4ea; color: var(--cc-success); }
+.slot { position: relative; padding: 10px 4px; border-radius: 10px; text-align: center; font-weight: 600; font-size: .9rem; cursor: pointer; border: 2px solid transparent;
+  &.BOOKED { cursor: default; } &.BLOCKED { cursor: default; }
+  &.past { opacity: .45; cursor: default; }
+  &.sel { border-color: var(--cc-primary); box-shadow: 0 0 0 3px rgba(11, 92, 173, .15); } }
+.BOOKED { background: #e3eefa; color: var(--cc-primary); }
+.BLOCKED { background: #eceff3; color: #8a98a8; text-decoration: line-through; }
+.blk { position: absolute; top: 2px; right: 2px; border: none; background: none; cursor: pointer; padding: 0; color: inherit; opacity: .5;
+  mat-icon { font-size: 14px; width: 14px; height: 14px; } &:hover { opacity: 1; } }
+.booking .form-grid { margin-top: 12px; }
+.booking { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--cc-border); h4 { margin: 0 0 10px; } }
+@media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }

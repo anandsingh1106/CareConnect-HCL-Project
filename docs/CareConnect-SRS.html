@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CareConnect EHR - Software Requirements Specification</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm 20mm 18mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Calibri, Arial, sans-serif; font-size: 10.2pt; line-height: 1.45; color: #1d2733; margin: 0; }
+  h1, h2, h3 { color: #0b3c73; page-break-after: avoid; }
+  h2 { font-size: 15pt; border-bottom: 2px solid #0b5cad; padding-bottom: 4px; margin: 22px 0 10px; }
+  h3 { font-size: 12pt; margin: 16px 0 6px; }
+  p { margin: 0 0 8px; text-align: justify; }
+  ul { margin: 0 0 8px 0; padding-left: 20px; } li { margin-bottom: 2px; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 12px; font-size: 9.3pt; page-break-inside: auto; }
+  tr { page-break-inside: avoid; }
+  th { background: #0b5cad; color: #fff; text-align: left; padding: 5px 7px; font-weight: 600; }
+  td { border: 1px solid #cfd9e4; padding: 4px 7px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f4f7fb; }
+  .id { font-family: Consolas, monospace; font-size: 8.8pt; white-space: nowrap; color: #0b3c73; font-weight: 600; }
+  .pri-h { color: #b3261e; font-weight: 600; } .pri-m { color: #9a5b00; font-weight: 600; }
+  .page-break { page-break-before: always; }
+
+  /* cover */
+  .cover { height: 245mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .cover-top { border-left: 8px solid #0b5cad; padding-left: 18px; margin-top: 40mm; }
+  .cover .kicker { color: #0e9f8e; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: 10pt; }
+  .cover h1 { font-size: 30pt; margin: 8px 0 6px; color: #0b3c73; line-height: 1.1; }
+  .cover .sub { font-size: 14pt; color: #4a5b6d; }
+  .cover table { width: 70%; font-size: 10pt; }
+  .cover td:first-child { width: 38%; font-weight: 600; background: #eef3f9; }
+  .toc { columns: 2; column-gap: 24px; font-size: 10pt; }
+  .toc div { break-inside: avoid; padding: 2px 0; border-bottom: 1px dotted #c5d0dc; }
+  .note { background: #eef5fd; border-left: 4px solid #0b5cad; padding: 8px 12px; margin: 8px 0 12px; font-size: 9.8pt; }
+
+  /* architecture diagram */
+  .arch { page-break-inside: avoid; break-inside: avoid; display: flex; align-items: stretch; gap: 10px; margin: 10px 0 14px; font-size: 9pt; }
+  .box { border: 2px solid #0b5cad; border-radius: 8px; padding: 8px; background: #f4f8fd; flex: 1; text-align: center; }
+  .box b { display: block; color: #0b3c73; font-size: 10pt; margin-bottom: 4px; }
+  .box .layer { background: #fff; border: 1px solid #b9cde4; border-radius: 5px; margin: 3px 0; padding: 3px; }
+  .arrow { align-self: center; font-size: 18pt; color: #0e9f8e; font-weight: 700; }
+  .db { border-color: #0e9f8e; background: #effaf8; }
+  .sig { display: flex; gap: 20px; margin-top: 30px; }
+  .sig div { flex: 1; border-top: 1px solid #555; padding-top: 4px; font-size: 9.5pt; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ======================= COVER ======================= -->
+<section class="cover">
+  <div class="cover-top">
+    <div class="kicker">Software Requirements Specification</div>
+    <h1>CareConnect<br>Patient-Provider EHR</h1>
+    <div class="sub">Electronic Health Record, e-Prescribing and Patient Portal</div>
+  </div>
+  <table>
+    <tr><td>Document</td><td>Software Requirements Specification (SRS)</td></tr>
+    <tr><td>Version</td><td>1.0</td></tr>
+    <tr><td>Date</td><td>October 2026</td></tr>
+    <tr><td>Standard followed</td><td>IEEE Std 830-1998 (adapted)</td></tr>
+    <tr><td>Project type</td><td>Academic full-stack project</td></tr>
+    <tr><td>Technology</td><td>Spring Boot 3 · Angular 21 · Oracle Database</td></tr>
+    <tr><td>Status</td><td>Baseline – implemented and tested</td></tr>
+  </table>
+  <div></div>
+</section>
+
+<section class="page-break">
+  <h2>Revision History</h2>
+  <table>
+    <tr><th style="width:12%">Version</th><th style="width:18%">Date</th><th>Description</th></tr>
+    <tr><td>0.1</td><td>Sep 2026</td><td>Initial draft: scope, user roles and module list</td></tr>
+    <tr><td>0.5</td><td>Sep 2026</td><td>Functional requirements for all modules, data model</td></tr>
+    <tr><td>1.0</td><td>Oct 2026</td><td>Baseline aligned with the implemented and tested system</td></tr>
+  </table>
+
+  <h2>Table of Contents</h2>
+  <div class="toc">
+    <div>1. Introduction</div><div>1.1 Purpose</div><div>1.2 Scope</div><div>1.3 Definitions and Abbreviations</div><div>1.4 References</div><div>1.5 Document Overview</div>
+    <div>2. Overall Description</div><div>2.1 Product Perspective</div><div>2.2 Product Functions</div><div>2.3 User Classes and Characteristics</div>
+    <div>2.4 Operating Environment</div><div>2.5 Design and Implementation Constraints</div><div>2.6 Assumptions and Dependencies</div>
+    <div>3. Functional Requirements</div><div>3.1 Authentication and Access Control</div><div>3.2 Patient Records</div><div>3.3 Clinical Documentation</div>
+    <div>3.4 Order Entry (CPOE) and Decision Support</div><div>3.5 Medication Management</div><div>3.6 Scheduling</div><div>3.7 Patient Portal</div>
+    <div>3.8 Messaging, Notifications and Dashboards</div><div>3.9 Administration and Audit</div>
+    <div>4. External Interface Requirements</div><div>5. Non-Functional Requirements</div><div>6. Data Requirements</div>
+    <div>7. Use Case Descriptions</div><div>8. Acceptance Criteria</div><div>Appendix A – Role Access Matrix</div>
+  </div>
+
+  <h2>1. Introduction</h2>
+  <h3>1.1 Purpose</h3>
+  <p>This Software Requirements Specification describes the functional and non-functional requirements of <b>CareConnect</b>,
+  a web-based Electronic Health Record (EHR) system that connects patients with their care providers. It is written for the
+  project guide and evaluators, the developers who build and maintain the system, and the testers who verify it. The document is
+  the reference for design, implementation, testing and acceptance of the system.</p>
+
+  <h3>1.2 Scope</h3>
+  <p>CareConnect supports the day-to-day work of an outpatient clinic. It lets receptionists register patients and book
+  appointments, doctors document visits and place orders, nurses record vitals and administer medicines, pharmacists verify and
+  dispense prescriptions, administrators manage users and master data, and patients view their own records online.</p>
+  <p><b>In scope:</b> patient registration and history, clinical notes (SOAP), vital signs, ICD-10 diagnoses, computerized
+  provider order entry (CPOE) with clinical decision support (CDS), laboratory results, e-prescribing, pharmacy verification and
+  dispensing, drug inventory, medication administration record (MAR), appointment scheduling, patient portal with PDF downloads,
+  secure messaging, notifications, dashboards and audit logging.</p>
+  <p><b>Out of scope:</b> billing and insurance claims, inpatient bed management, integration with external laboratory or
+  pharmacy systems (HL7/FHIR), real video calls for telehealth, and SMS/e-mail delivery.</p>
+
+  <h3>1.3 Definitions and Abbreviations</h3>
+  <table>
+    <tr><th style="width:18%">Term</th><th>Meaning</th></tr>
+    <tr><td>EHR</td><td>Electronic Health Record – digital version of a patient's medical chart</td></tr>
+    <tr><td>MRN</td><td>Medical Record Number – unique patient identifier, format <code>CC-YYYY-NNNNNN</code></td></tr>
+    <tr><td>SOAP</td><td>Subjective, Objective, Assessment, Plan – standard structure of a clinical note</td></tr>
+    <tr><td>CPOE</td><td>Computerized Provider Order Entry – electronic ordering of tests, medicines and referrals</td></tr>
+    <tr><td>CDS</td><td>Clinical Decision Support – automatic safety checks (allergy, interaction, duplicate)</td></tr>
+    <tr><td>MAR</td><td>Medication Administration Record – log of each dose given to a patient</td></tr>
+    <tr><td>ICD-10</td><td>International Classification of Diseases, 10th revision – diagnosis coding system</td></tr>
+    <tr><td>e-Rx</td><td>Electronic prescription</td></tr>
+    <tr><td>RBAC</td><td>Role-Based Access Control</td></tr>
+    <tr><td>JWT</td><td>JSON Web Token – signed token used to authenticate API requests</td></tr>
+    <tr><td>Encounter</td><td>One visit of a patient with a doctor, containing notes, diagnoses, vitals and orders</td></tr>
+  </table>
+
+  <h3>1.4 References</h3>
+  <ul>
+    <li>IEEE Std 830-1998, <i>Recommended Practice for Software Requirements Specifications</i></li>
+    <li>WHO, <i>ICD-10 International Statistical Classification of Diseases</i></li>
+    <li>Project documents: <code>docs/architecture.md</code> (diagrams), <code>docs/api.md</code> (REST API), <code>docs/test-cases.md</code></li>
+  </ul>
+
+  <h3>1.5 Document Overview</h3>
+  <p>Section 2 gives an overall description of the product and its users. Section 3 lists the functional requirements module by
+  module, each with a unique identifier and priority. Sections 4–6 cover interfaces, quality attributes and data. Section 7
+  describes the key use cases and Section 8 the acceptance criteria.</p>
+</section>
+
+<!-- ======================= 2. OVERALL DESCRIPTION ======================= -->
+<section>
+  <h2>2. Overall Description</h2>
+  <h3>2.1 Product Perspective</h3>
+  <p>CareConnect is a new, self-contained system built as a three-tier web application. A single-page Angular application runs
+  in the browser and talks to a Spring Boot REST API over HTTPS using JSON. The API stores all data in an Oracle database and
+  uploaded documents on the server file system.</p>
+  <div class="arch">
+    <div class="box"><b>Presentation tier</b>
+      <div class="layer">Angular 21 SPA</div><div class="layer">Angular Material UI</div><div class="layer">Route guards · HTTP interceptor</div><div class="layer">Chart.js dashboards</div></div>
+    <div class="arrow">⇄</div>
+    <div class="box"><b>Application tier</b>
+      <div class="layer">Spring Security + JWT</div><div class="layer">REST controllers + validation</div><div class="layer">Services · CDS engine · PDF</div><div class="layer">JPA repositories · audit</div></div>
+    <div class="arrow">⇄</div>
+    <div class="box db"><b>Data tier</b>
+      <div class="layer">Oracle Database</div><div class="layer">29 tables, sequences</div><div class="layer">Constraints · indexes</div><div class="layer">Liquibase migrations</div></div>
+  </div>
+
+  <h3>2.2 Product Functions</h3>
+  <ul>
+    <li>Register patients, generate MRNs and maintain allergies, problems, immunizations, family history and documents.</li>
+    <li>Record encounters with SOAP notes, e-signature, addenda, ICD-10 diagnoses and vital signs with trend charts.</li>
+    <li>Place lab, imaging, medication and referral orders with automatic allergy, interaction and duplicate checks.</li>
+    <li>Enter and flag laboratory results against normal and critical ranges.</li>
+    <li>Route e-prescriptions to the pharmacist for verification and dispensing with automatic stock deduction.</li>
+    <li>Record every medication dose on the MAR.</li>
+    <li>Manage provider slots and appointments, including online booking by patients.</li>
+    <li>Give patients a portal with their medicines, results, visit summaries (PDF), bookings and messages.</li>
+    <li>Provide role dashboards, in-app notifications, user and master-data administration, and a complete audit trail.</li>
+  </ul>
+
+  <h3>2.3 User Classes and Characteristics</h3>
+  <table>
+    <tr><th style="width:16%">User class</th><th>Description and main tasks</th><th style="width:16%">Technical skill</th></tr>
+    <tr><td><b>Doctor</b></td><td>Opens encounters, writes and signs notes, adds diagnoses, places orders and e-prescriptions, overrides CDS alerts with a reason, reviews results, messages patients.</td><td>Moderate</td></tr>
+    <tr><td><b>Nurse</b></td><td>Records vital signs, allergies and immunizations, enters lab results, administers medicines and documents them on the MAR.</td><td>Moderate</td></tr>
+    <tr><td><b>Pharmacist</b></td><td>Verifies or rejects prescriptions, dispenses medicines, maintains the drug formulary, stock and interaction table.</td><td>Moderate</td></tr>
+    <tr><td><b>Receptionist</b></td><td>Registers patients, edits demographics, manages slots, books, checks in and cancels appointments.</td><td>Basic</td></tr>
+    <tr><td><b>Administrator</b></td><td>Manages user accounts, roles, departments, ICD-10 codes and lab tests; reviews audit logs.</td><td>High</td></tr>
+    <tr><td><b>Patient</b></td><td>Views own record, downloads PDFs, books and cancels appointments, messages doctors.</td><td>Basic</td></tr>
+  </table>
+
+  <h3>2.4 Operating Environment</h3>
+  <ul>
+    <li><b>Client:</b> any modern browser (Chrome, Edge, Firefox, Safari) on desktop, tablet or phone.</li>
+    <li><b>Server:</b> Java 17 or later; Windows or Linux; minimum 2 GB RAM.</li>
+    <li><b>Database:</b> Oracle Database (tested with Oracle XE; later versions supported) on port 1521.</li>
+    <li><b>Build tools:</b> Maven (wrapper included) and Node.js 20+ with npm.</li>
+  </ul>
+
+  <h3>2.5 Design and Implementation Constraints</h3>
+  <ul>
+    <li>Backend: Java 17+, Spring Boot 3.x (Web, Data JPA, Security, Validation), Maven, Lombok, MapStruct.</li>
+    <li>Frontend: Angular 17+ with standalone components, reactive forms, guards, interceptors and Angular Material.</li>
+    <li>Database: Oracle only, using sequences for keys, CHECK/unique/foreign-key constraints and indexes; schema changes via Liquibase.</li>
+    <li>Security: JWT access and refresh tokens, BCrypt password hashing, role-based access on both UI and API.</li>
+    <li>API documented with OpenAPI (Swagger UI); no secrets hard-coded – configuration through environment variables and profiles.</li>
+  </ul>
+
+  <h3>2.6 Assumptions and Dependencies</h3>
+  <ul>
+    <li>An Oracle database and a schema user with create-table/sequence rights are available before installation.</li>
+    <li>Drug, interaction, ICD-10 and lab reference data are loaded as master data and maintained by administrators/pharmacists.</li>
+    <li>Users access the system over a trusted network or HTTPS in production.</li>
+    <li>The system clock of the server is correct (appointments, audit and token expiry depend on it).</li>
+  </ul>
+</section>
+
+<section class="page-break">
+  <h2>3. Functional Requirements</h2>
+  <p>Priority: <span class="pri-h">High</span> = essential for release, <span class="pri-m">Medium</span> = important, Low = desirable.</p>
+
+  <h3>3.1 Authentication and Access Control</h3>
+  <table>
+    <tr><th style="width:9%">ID</th><th>Requirement</th><th style="width:9%">Priority</th></tr>
+    <tr><td class="id">FR-01</td><td>The system shall authenticate users with username and password and issue a short-lived access token (15 min) and a refresh token (7 days).</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-02</td><td>The system shall store passwords only as BCrypt hashes and give the same generic error for unknown user and wrong password.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-03</td><td>The system shall rotate the refresh token on each use and revoke all sessions of a user when a used token is presented again.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-04</td><td>The system shall restrict every screen and API operation to the roles allowed for it (Appendix A); disallowed calls return HTTP 403.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-05</td><td>The client shall renew an expired access token automatically and redirect to login when the session cannot be renewed.</td><td class="pri-m">Medium</td></tr>
+    <tr><td class="id">FR-06</td><td>Users shall be able to change their own password (8–72 characters with a letter and a digit) and log out.</td><td class="pri-m">Medium</td></tr>
+  </table>
+
+  <h3>3.2 Patient Records</h3>
+  <table>
+    <tr><th style="width:9%">ID</th><th>Requirement</th><th style="width:9%">Priority</th></tr>
+    <tr><td class="id">FR-07</td><td>Receptionists and doctors shall register patients with name, date of birth, gender, phone, address, emergency contact and insurance; the system shall generate a unique MRN.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-08</td><td>Staff shall search patients by name, MRN, date of birth or phone with paged and sortable results.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-09</td><td>Doctors and nurses shall maintain allergies (allergen, type, reaction, severity, status), immunizations and family history; doctors shall maintain the problem list with ICD-10 codes.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-10</td><td>Authorised staff shall upload clinical documents (PDF, images, up to 10 MB) with a category, and download them.</td><td class="pri-m">Medium</td></tr>
+    <tr><td class="id">FR-11</td><td>The patient chart shall show a banner with identity and active allergies, and a summary of active problems, current medicines, latest vitals and open encounters.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-12</td><td>Updates shall be rejected when the record was changed by another user since it was loaded (optimistic locking).</td><td class="pri-m">Medium</td></tr>
+    <tr><td class="id">FR-13</td><td>Administrators shall delete patient records by soft delete only; deleted records are hidden but retained for audit.</td><td class="pri-m">Medium</td></tr>
+  </table>
+
+  <h3>3.3 Clinical Documentation</h3>
+  <table>
+    <tr><th style="width:9%">ID</th><th>Requirement</th><th style="width:9%">Priority</th></tr>
+    <tr><td class="id">FR-14</td><td>Doctors and nurses shall open an encounter (type, chief complaint, responsible doctor), optionally linked to an appointment.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-15</td><td>Doctors shall write SOAP notes, optionally starting from a template; a note is saved as DRAFT and only its author may edit it.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-16</td><td>Signing a note shall lock it permanently; corrections shall be added as signed addenda linked to the original note.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-17</td><td>Doctors shall add ICD-10 diagnoses to an encounter with type-ahead search; only one diagnosis may be PRIMARY.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-18</td><td>Doctors and nurses shall record vital signs (BP, pulse, temperature, respiratory rate, SpO<sub>2</sub>, weight, height); the system shall reject implausible values and calculate BMI.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-19</td><td>The system shall display vital sign trends as a chart and table.</td><td class="pri-m">Medium</td></tr>
+    <tr><td class="id">FR-20</td><td>An encounter can be closed only when all its notes are signed; closed encounters accept no new notes or orders.</td><td class="pri-h">High</td></tr>
+  </table>
+
+  <h3>3.4 Order Entry (CPOE) and Clinical Decision Support</h3>
+  <table>
+    <tr><th style="width:9%">ID</th><th>Requirement</th><th style="width:9%">Priority</th></tr>
+    <tr><td class="id">FR-21</td><td>Doctors shall place lab, imaging, medication and referral orders on an open encounter with priority (routine, urgent, STAT); each order receives a number <code>ORD-NNNNNN</code>.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-22</td><td>Before a medication order is placed, the system shall check it against the patient's active drug allergies (by drug name, generic name and class) and raise a CRITICAL alert on a match.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-23</td><td>The system shall check new medicines against the patient's active medicines using the interaction table: MINOR = info, MODERATE = warning, MAJOR = critical, CONTRAINDICATED = hard stop.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-24</td><td>The system shall warn about duplicate orders (same active drug or same pending test).</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-25</td><td>Warning and critical alerts shall require an override reason; contraindicated combinations cannot be overridden. Alerts and reasons shall be stored with the order.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-26</td><td>Orders shall follow the lifecycle DRAFT → PLACED → IN_PROGRESS → COMPLETED, or CANCELLED with a reason; backward moves are not allowed.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-27</td><td>Doctors and nurses shall enter results; numeric lab values shall be flagged NORMAL, LOW, HIGH, CRITICAL_LOW or CRITICAL_HIGH against the test's ranges, and the ordering doctor notified.</td><td class="pri-h">High</td></tr>
+  </table>
+</section>
+
+<section>
+  <h3>3.5 Medication Management</h3>
+  <table>
+    <tr><th style="width:9%">ID</th><th>Requirement</th><th style="width:9%">Priority</th></tr>
+    <tr><td class="id">FR-28</td><td>A medication order shall create an e-prescription (<code>RX-NNNNNN</code>) with dose, route, frequency, duration and quantity in status PENDING_VERIFICATION, and notify pharmacists.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-29</td><td>Pharmacists shall see the prescription with its CDS alerts, override reason, patient allergies and current stock, and verify it or reject it with a reason.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-30</td><td>Only verified prescriptions can be dispensed; dispensing shall reduce stock, write an inventory ledger entry and complete the order. Dispensing more than the available stock shall be refused.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-31</td><td>When stock reaches the reorder level the system shall list the drug as low stock and notify pharmacists.</td><td class="pri-m">Medium</td></tr>
+    <tr><td class="id">FR-32</td><td>Pharmacists and administrators shall maintain the drug formulary, receive or adjust stock, and maintain drug-drug interactions.</td><td class="pri-m">Medium</td></tr>
+    <tr><td class="id">FR-33</td><td>Nurses shall document each dose on the MAR as GIVEN, HELD, REFUSED or MISSED; a reason is mandatory for all except GIVEN.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-34</td><td>Doctors shall discontinue a medicine with a reason, or modify it (the old prescription is discontinued and a replacement goes back for verification).</td><td class="pri-m">Medium</td></tr>
+  </table>
+
+  <h3>3.6 Scheduling</h3>
+  <table>
+    <tr><th style="width:9%">ID</th><th>Requirement</th><th style="width:9%">Priority</th></tr>
+    <tr><td class="id">FR-35</td><td>Authorised staff shall generate equal-length appointment slots for a doctor over a date range (Sundays skipped) and block or unblock slots.</td><td class="pri-m">Medium</td></tr>
+    <tr><td class="id">FR-36</td><td>Staff shall book a free slot for a patient; the same slot shall never be booked twice and a patient shall not hold overlapping bookings.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-37</td><td>Staff shall check in, complete, mark no-show or cancel (with reason) an appointment; a checked-in appointment can start an encounter.</td><td class="pri-m">Medium</td></tr>
+  </table>
+
+  <h3>3.7 Patient Portal</h3>
+  <table>
+    <tr><th style="width:9%">ID</th><th>Requirement</th><th style="width:9%">Priority</th></tr>
+    <tr><td class="id">FR-38</td><td>Patients shall view only their own profile, allergies, conditions, medicines, lab results, vitals and visit summaries.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-39</td><td>Patients shall download a visit summary and a prescription as PDF documents.</td><td class="pri-m">Medium</td></tr>
+    <tr><td class="id">FR-40</td><td>Patients shall book free slots with a doctor (in person or telehealth) and cancel their own bookings with a reason.</td><td class="pri-h">High</td></tr>
+  </table>
+
+  <h3>3.8 Messaging, Notifications and Dashboards</h3>
+  <table>
+    <tr><th style="width:9%">ID</th><th>Requirement</th><th style="width:9%">Priority</th></tr>
+    <tr><td class="id">FR-41</td><td>Patients and doctors shall exchange secure messages grouped by conversation, with unread counts and read status.</td><td class="pri-m">Medium</td></tr>
+    <tr><td class="id">FR-42</td><td>The system shall create in-app notifications for new prescriptions, rejections, results, low stock, messages and bookings, shown in a bell menu with unread count.</td><td class="pri-m">Medium</td></tr>
+    <tr><td class="id">FR-43</td><td>Each role shall have a dashboard with statistic cards, charts and a work list relevant to that role.</td><td class="pri-m">Medium</td></tr>
+  </table>
+
+  <h3>3.9 Administration and Audit</h3>
+  <table>
+    <tr><th style="width:9%">ID</th><th>Requirement</th><th style="width:9%">Priority</th></tr>
+    <tr><td class="id">FR-44</td><td>Administrators shall create, edit, enable/disable user accounts, assign roles and departments, reset passwords, and link a patient account to exactly one patient record.</td><td class="pri-h">High</td></tr>
+    <tr><td class="id">FR-45</td><td>Administrators shall maintain departments, ICD-10 codes and lab tests (units, normal and critical ranges).</td><td class="pri-m">Medium</td></tr>
+    <tr><td class="id">FR-46</td><td>The system shall log every access to patient data and every login/failed login with user, role, action, patient, path, status, IP and time; administrators shall search this log.</td><td class="pri-h">High</td></tr>
+  </table>
+
+  <h2>4. External Interface Requirements</h2>
+  <h3>4.1 User Interfaces</h3>
+  <ul>
+    <li>Public landing page describing the product, and a login page with show/hide password.</li>
+    <li>After login: side navigation filtered by role, top bar with role badge, notification bell and user menu.</li>
+    <li>Consistent Material Design components; tables with paging; dialogs for data entry; colour-coded status chips (e.g. red for critical).</li>
+    <li>Confirmation dialogs before irreversible or safety-relevant actions (sign, verify, dispense, cancel, delete, override).</li>
+    <li>Validation messages next to each form field; responsive layout down to 360 px width.</li>
+  </ul>
+  <h3>4.2 Software Interfaces</h3>
+  <ul>
+    <li>REST API over HTTP(S) with JSON bodies, documented with OpenAPI 3 (Swagger UI at <code>/swagger-ui.html</code>); 122 endpoints.</li>
+    <li>Oracle Database through JDBC (Oracle thin driver) and JPA/Hibernate.</li>
+    <li>Uniform error response: status, error code, message, field errors and details (e.g. CDS alerts).</li>
+  </ul>
+  <h3>4.3 Communication Interfaces</h3>
+  <ul>
+    <li>HTTPS in production; header <code>Authorization: Bearer &lt;token&gt;</code> on every protected request.</li>
+    <li>Cross-origin requests allowed only from configured front-end origins (CORS).</li>
+  </ul>
+</section>
+
+<!-- ======================= 5. NFR ======================= -->
+<section>
+  <h2>5. Non-Functional Requirements</h2>
+  <table>
+    <tr><th style="width:10%">ID</th><th style="width:16%">Category</th><th>Requirement</th></tr>
+    <tr><td class="id">NFR-01</td><td>Security</td><td>All API endpoints except login and token refresh require a valid JWT; role checks are enforced on the server with <code>@PreAuthorize</code>, and mirrored by route guards in the UI.</td></tr>
+    <tr><td class="id">NFR-02</td><td>Security</td><td>Passwords are hashed with BCrypt; refresh tokens are stored only as SHA-256 hashes; secrets (DB password, JWT key) come from environment variables, never from source code.</td></tr>
+    <tr><td class="id">NFR-03</td><td>Privacy</td><td>"Minimum necessary" access: e.g. receptionists see demographics but not clinical data; patients can reach only their own record (other records return 404).</td></tr>
+    <tr><td class="id">NFR-04</td><td>Auditability</td><td>Audit entries are written in a separate transaction so they are kept even when the business operation fails.</td></tr>
+    <tr><td class="id">NFR-05</td><td>Performance</td><td>Typical API responses complete within 1 second for up to 50 concurrent users; list screens are paginated (default 20 rows) and search columns are indexed.</td></tr>
+    <tr><td class="id">NFR-06</td><td>Reliability</td><td>Each business operation runs in a database transaction; optimistic locking prevents lost updates; database constraints guarantee that stock never becomes negative.</td></tr>
+    <tr><td class="id">NFR-07</td><td>Data retention</td><td>Clinical records are never physically deleted by users (soft delete); signed notes are immutable.</td></tr>
+    <tr><td class="id">NFR-08</td><td>Usability</td><td>A new user can complete a core task (e.g. book an appointment) without training; all actions give success/error feedback; forms validate inputs before submission.</td></tr>
+    <tr><td class="id">NFR-09</td><td>Portability</td><td>Runs on Windows and Linux; front end works in current versions of major browsers and on mobile screens.</td></tr>
+    <tr><td class="id">NFR-10</td><td>Maintainability</td><td>Layered, modular code (controller / service / repository / DTO / mapper per module); database changes only through versioned Liquibase scripts; separate dev, test and prod profiles.</td></tr>
+    <tr><td class="id">NFR-11</td><td>Testability</td><td>Automated unit and integration tests (JUnit 5, Mockito, MockMvc) run without an Oracle installation using an in-memory database in Oracle mode.</td></tr>
+    <tr><td class="id">NFR-12</td><td>Availability</td><td>The system is stateless on the server side, so it can be restarted or scaled without losing user sessions.</td></tr>
+  </table>
+
+  <h2>6. Data Requirements</h2>
+  <p>All data is stored in the Oracle schema <code>CARECONNECT</code>. Primary keys are generated from one sequence per table;
+  business numbers use dedicated sequences (<code>mrn_seq</code>, <code>order_no_seq</code>, <code>rx_no_seq</code>). Every
+  transactional table carries <code>created_at/by</code>, <code>updated_at/by</code> and a <code>version</code> column.</p>
+  <table>
+    <tr><th style="width:24%">Group</th><th>Tables</th></tr>
+    <tr><td>Users and security</td><td>departments, app_users, refresh_tokens, audit_logs</td></tr>
+    <tr><td>Patient record</td><td>patients, patient_allergies, patient_problems, immunizations, family_history, patient_documents</td></tr>
+    <tr><td>Clinical</td><td>encounters, clinical_notes, encounter_diagnoses, vitals, icd10_codes, note_templates</td></tr>
+    <tr><td>Orders and results</td><td>clinical_orders, order_alerts, lab_tests, lab_results</td></tr>
+    <tr><td>Medication</td><td>drugs, drug_interactions, prescriptions, medication_administrations, inventory_transactions</td></tr>
+    <tr><td>Scheduling and communication</td><td>provider_slots, appointments, messages, notifications</td></tr>
+  </table>
+  <p><b>Key integrity rules:</b> unique MRN, username, order number and prescription number; CHECK constraints on all status and
+  enumeration columns (gender, role, order status, severity, etc.); <code>stock_qty &gt;= 0</code>; one lab result per order;
+  one prescription per medication order; one portal account per patient; foreign keys between all related tables and indexes
+  on every foreign key and search column.</p>
+  <p><b>Master data</b> delivered with the system: 10 departments, about 40 ICD-10 codes, 16 lab tests with normal and critical
+  ranges, 26 drugs, 17 drug interactions and 4 SOAP note templates.</p>
+</section>
+
+<section class="page-break">
+  <h2>7. Use Case Descriptions</h2>
+
+  <h3>UC-01: Place a medication order with decision support</h3>
+  <table>
+    <tr><td style="width:22%"><b>Actor</b></td><td>Doctor</td></tr>
+    <tr><td><b>Precondition</b></td><td>Doctor is logged in; the patient has an open encounter.</td></tr>
+    <tr><td><b>Main flow</b></td><td>1. Doctor opens the encounter and selects <i>New order → Medication</i>.<br>2. Doctor searches and selects a drug; the system runs CDS checks immediately.<br>3. Doctor enters dose, route, frequency, duration and quantity.<br>4. If there are no alerts, doctor clicks <i>Place order</i>; the system saves the order and the e-prescription and notifies pharmacists.</td></tr>
+    <tr><td><b>Alternate flow</b></td><td>3a. An allergy, interaction or duplicate alert is shown. The doctor either cancels, or enters an override reason and places the order; the alert and reason are stored.<br>3b. The combination is contraindicated: the order is blocked and cannot be placed.</td></tr>
+    <tr><td><b>Postcondition</b></td><td>Order is PLACED; prescription is PENDING_VERIFICATION.</td></tr>
+  </table>
+
+  <h3>UC-02: Verify and dispense a prescription</h3>
+  <table>
+    <tr><td style="width:22%"><b>Actor</b></td><td>Pharmacist</td></tr>
+    <tr><td><b>Precondition</b></td><td>A prescription is pending verification.</td></tr>
+    <tr><td><b>Main flow</b></td><td>1. Pharmacist opens the verification queue and selects a prescription.<br>2. System shows details, CDS alerts with override reason, patient allergies and stock.<br>3. Pharmacist verifies (optional note) and confirms.<br>4. From the dispense queue, pharmacist confirms the quantity; the system deducts stock, writes the ledger and completes the order.</td></tr>
+    <tr><td><b>Alternate flow</b></td><td>3a. Pharmacist rejects with a reason; the prescriber is notified.<br>4a. Stock is insufficient: dispensing is refused with an error message.<br>4b. Stock falls to reorder level: pharmacists receive a low-stock notification.</td></tr>
+  </table>
+
+  <h3>UC-03: Document a visit</h3>
+  <table>
+    <tr><td style="width:22%"><b>Actors</b></td><td>Nurse, Doctor</td></tr>
+    <tr><td><b>Main flow</b></td><td>1. Receptionist checks in the patient; doctor starts the visit from the appointment.<br>2. Nurse records vitals; BMI is calculated.<br>3. Doctor writes a SOAP note from a template and adds ICD-10 diagnoses.<br>4. Doctor signs the note (confirmation) and closes the encounter.</td></tr>
+    <tr><td><b>Exception</b></td><td>4a. An unsigned note exists: closing is refused until all notes are signed.<br>Later corrections are made through signed addenda.</td></tr>
+  </table>
+
+  <h3>UC-04: Patient books an appointment online</h3>
+  <table>
+    <tr><td style="width:22%"><b>Actor</b></td><td>Patient</td></tr>
+    <tr><td><b>Main flow</b></td><td>1. Patient opens <i>My appointments</i>, selects a doctor and date.<br>2. System shows free future slots.<br>3. Patient picks a time, chooses in-person or telehealth, enters a reason and confirms.<br>4. System books the slot (via PORTAL) and shows it under upcoming appointments.</td></tr>
+    <tr><td><b>Exception</b></td><td>3a. Another user booked the slot meanwhile: the system reports that the slot is taken.<br>Patient may cancel own booking later with a reason.</td></tr>
+  </table>
+
+  <h3>UC-05: Login and session renewal</h3>
+  <table>
+    <tr><td style="width:22%"><b>Actor</b></td><td>Any user</td></tr>
+    <tr><td><b>Main flow</b></td><td>1. User enters username and password.<br>2. System validates credentials, records the login and returns tokens.<br>3. User is taken to the role dashboard.<br>4. When the access token expires, the client obtains a new pair with the refresh token and repeats the request transparently.</td></tr>
+    <tr><td><b>Exception</b></td><td>2a. Wrong credentials: generic error, failed login audited.<br>4a. Refresh token expired or revoked: user is returned to the login page.</td></tr>
+  </table>
+</section>
+
+<!-- ======================= 8. ACCEPTANCE + APPENDIX ======================= -->
+<section>
+  <h2>8. Acceptance Criteria</h2>
+  <p>The system is accepted when all <b>High</b> priority requirements are demonstrated and the following checks pass:</p>
+  <table>
+    <tr><th style="width:10%">ID</th><th>Acceptance test</th><th style="width:14%">Covers</th></tr>
+    <tr><td class="id">AT-01</td><td>Each of the six roles can log in and sees only its permitted menus; a forbidden API call returns 403.</td><td>FR-01–04</td></tr>
+    <tr><td class="id">AT-02</td><td>Registering a patient produces an MRN in the format CC-YYYY-NNNNNN; invalid input shows field errors.</td><td>FR-07</td></tr>
+    <tr><td class="id">AT-03</td><td>A signed note cannot be edited; an addendum can be added; an encounter with a draft note cannot be closed.</td><td>FR-15–20</td></tr>
+    <tr><td class="id">AT-04</td><td>Ordering Amoxicillin for a Penicillin-allergic patient shows a critical allergy alert and requires an override reason.</td><td>FR-22, 25</td></tr>
+    <tr><td class="id">AT-05</td><td>Ordering Aspirin for a patient on Warfarin shows an interaction alert; a contraindicated pair is blocked.</td><td>FR-23, 25</td></tr>
+    <tr><td class="id">AT-06</td><td>A WBC value above the normal range is flagged HIGH and the order becomes COMPLETED.</td><td>FR-27</td></tr>
+    <tr><td class="id">AT-07</td><td>A prescription cannot be dispensed before verification; dispensing reduces stock by the dispensed quantity.</td><td>FR-29–30</td></tr>
+    <tr><td class="id">AT-08</td><td>Booking an already booked slot is refused.</td><td>FR-36</td></tr>
+    <tr><td class="id">AT-09</td><td>A patient can download own visit PDF but gets "not found" for another patient's visit.</td><td>FR-38–39</td></tr>
+    <tr><td class="id">AT-10</td><td>Opening a patient chart creates an audit entry visible to the administrator.</td><td>FR-46</td></tr>
+  </table>
+  <div class="note">Verification status of this baseline: 39 automated backend tests, a 76-check API run against Oracle and a
+  browser run of all screens for all roles passed. Detailed test cases are listed in <code>docs/test-cases.md</code>.</div>
+
+  <h2>Appendix A – Role Access Matrix</h2>
+  <table>
+    <tr><th>Function</th><th>Admin</th><th>Doctor</th><th>Nurse</th><th>Pharm.</th><th>Recep.</th><th>Patient</th></tr>
+    <tr><td>Search patients</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>–</td></tr>
+    <tr><td>Register / edit demographics</td><td>–</td><td>✓</td><td>–</td><td>–</td><td>✓</td><td>–</td></tr>
+    <tr><td>View clinical chart</td><td>–</td><td>✓</td><td>✓</td><td>✓</td><td>–</td><td>own (portal)</td></tr>
+    <tr><td>Allergies, vitals, immunizations</td><td>–</td><td>✓</td><td>✓</td><td>read</td><td>–</td><td>read own</td></tr>
+    <tr><td>SOAP notes, diagnoses, close encounter</td><td>–</td><td>✓</td><td>–</td><td>read</td><td>–</td><td>summary</td></tr>
+    <tr><td>Place / cancel orders</td><td>–</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+    <tr><td>Enter results</td><td>–</td><td>✓</td><td>✓</td><td>–</td><td>–</td><td>–</td></tr>
+    <tr><td>Verify / dispense prescriptions</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>–</td><td>–</td></tr>
+    <tr><td>MAR documentation</td><td>–</td><td>read</td><td>✓</td><td>read</td><td>–</td><td>–</td></tr>
+    <tr><td>Drug inventory and interactions</td><td>✓</td><td>read</td><td>read</td><td>✓</td><td>–</td><td>–</td></tr>
+    <tr><td>Appointments and slots</td><td>✓</td><td>✓</td><td>✓</td><td>–</td><td>✓</td><td>own</td></tr>
+    <tr><td>Messaging</td><td>–</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>✓</td></tr>
+    <tr><td>Users, departments, master data</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+    <tr><td>Audit log</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+  </table>
+
+  <div class="sig">
+    <div>Prepared by</div><div>Reviewed by (Project Guide)</div><div>Approved by</div>
+  </div>
+</section>
+</body>
+</html>

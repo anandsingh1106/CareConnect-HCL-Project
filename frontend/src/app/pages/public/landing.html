@@ -1,0 +1,175 @@
+<header class="topbar">
+  <div class="wrap bar">
+    <a class="brand" routerLink="/">
+      <span class="logo"><mat-icon>ecg_heart</mat-icon></span>
+      <span>Care<b>Connect</b></span>
+    </a>
+    <nav class="links">
+      <a href="#features">Features</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#roles">Roles</a>
+      <a href="#demo">Demo</a>
+    </nav>
+    @if (auth.loggedIn()) {
+      <a mat-flat-button routerLink="/dashboard"><mat-icon>space_dashboard</mat-icon>Open dashboard</a>
+    } @else {
+      <a mat-flat-button routerLink="/login"><mat-icon>login</mat-icon>Sign in</a>
+    }
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-text">
+      <span class="eyebrow"><mat-icon>verified</mat-icon> Secure &middot; Role-based &middot; Audited</span>
+      <h1>Connected care, from <span class="grad">first visit</span> to <span class="grad">final dose</span>.</h1>
+      <p class="lead">
+        CareConnect is a patient-provider electronic health record that brings doctors, nurses, pharmacists,
+        receptionists and patients onto one safe, auditable platform.
+      </p>
+      <div class="cta">
+        <a mat-flat-button class="big" routerLink="/login"><mat-icon>login</mat-icon>Staff sign in</a>
+        <a mat-stroked-button class="big light" routerLink="/login" [queryParams]="{ as: 'patient.ravi' }">
+          <mat-icon>favorite</mat-icon>Patient portal
+        </a>
+      </div>
+      <div class="stats">
+        <div><strong>6</strong><span>user roles</span></div>
+        <div><strong>3</strong><span>CDS safety checks</span></div>
+        <div><strong>100%</strong><span>chart access audited</span></div>
+      </div>
+    </div>
+
+    <!-- illustrative product preview built from HTML -->
+    <div class="preview" aria-hidden="true">
+      <div class="win">
+        <div class="win-bar"><i></i><i></i><i></i><span>CareConnect &middot; Patient chart</span></div>
+        <div class="win-body">
+          <div class="pbanner">
+            <div class="pav">RK</div>
+            <div><b>Ravi Kumar</b><small>CC-2026-000001 &middot; 58y M &middot; B+</small></div>
+            <span class="pill red"><mat-icon>warning</mat-icon>Penicillin</span>
+          </div>
+          <div class="mini-cards">
+            <div><small>BP</small><b>138/86</b></div>
+            <div><small>Pulse</small><b>78</b></div>
+            <div><small>SpO2</small><b>98%</b></div>
+            <div><small>HbA1c</small><b class="warn">7.9 H</b></div>
+          </div>
+          <div class="bars">
+            @for (h of [42, 58, 50, 72, 64, 80, 68, 90, 76, 60]; track $index) {
+              <span [style.height.%]="h"></span>
+            }
+          </div>
+          <div class="cds">
+            <mat-icon>gpp_maybe</mat-icon>
+            <div><b>Drug-allergy alert</b><small>Amoxicillin conflicts with recorded Penicillin allergy.</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="float f1"><mat-icon>local_pharmacy</mat-icon><div><b>RX-000104</b><small>Verified &middot; ready to dispense</small></div></div>
+      <div class="float f2"><mat-icon>event_available</mat-icon><div><b>10:30 AM</b><small>Dr. Mehta &middot; Booked</small></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Everything in one chart</span>
+      <h2>Built for the whole care team</h2>
+      <p>Every module you need to run an outpatient clinic - documented, validated and protected by role-based access.</p>
+    </div>
+    <div class="features">
+      @for (f of features; track f.title) {
+        <article class="feature">
+          <span class="ficon"><mat-icon>{{ f.icon }}</mat-icon></span>
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.text }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<section id="workflow" class="section alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Closed-loop medication safety</span>
+      <h2>One visit, end to end</h2>
+    </div>
+    <ol class="flow">
+      @for (s of flow; track s.title; let i = $index) {
+        <li>
+          <span class="step">{{ i + 1 }}</span>
+          <mat-icon>{{ s.icon }}</mat-icon>
+          <h3>{{ s.title }}</h3>
+          <p>{{ s.text }}</p>
+        </li>
+      }
+    </ol>
+  </div>
+</section>
+
+<section id="roles" class="section">
+  <div class="wrap two-col">
+    <div>
+      <span class="kicker">Minimum-necessary access</span>
+      <h2>Six roles, one source of truth</h2>
+      <p class="muted-l">
+        Every screen and every API call is checked against the user's role. Patient-data access is written to an
+        immutable audit trail, passwords are BCrypt-hashed and sessions use short-lived JWT tokens with rotation.
+      </p>
+      <ul class="checks">
+        <li><mat-icon>check_circle</mat-icon>JWT access + refresh tokens with reuse detection</li>
+        <li><mat-icon>check_circle</mat-icon>Signed notes are locked; changes go in addenda</li>
+        <li><mat-icon>check_circle</mat-icon>Soft deletes and optimistic locking protect records</li>
+        <li><mat-icon>check_circle</mat-icon>Oracle database with sequences, constraints and indexes</li>
+      </ul>
+    </div>
+    <div class="roles">
+      @for (r of roles; track r.name) {
+        <div class="role">
+          <mat-icon>{{ r.icon }}</mat-icon>
+          <div><b>{{ r.name }}</b><small>{{ r.text }}</small></div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section id="demo" class="section alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Try it now</span>
+      <h2>Demo accounts</h2>
+      <p>All demo users share the password <code>Password&#64;123</code>. Click an account to sign in as that user.</p>
+    </div>
+    <div class="demo-grid">
+      @for (a of accounts; track a.username) {
+        <a class="demo" routerLink="/login" [queryParams]="{ as: a.username }">
+          <mat-icon>{{ a.icon }}</mat-icon>
+          <div><b>{{ a.role }}</b><small>{{ a.username }}</small></div>
+          <mat-icon class="go">arrow_forward</mat-icon>
+        </a>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="wrap band">
+    <div>
+      <h2>Ready to see it in action?</h2>
+      <p>Sign in as a doctor and place a medication order to watch the safety checks work.</p>
+    </div>
+    <a mat-flat-button class="big white" routerLink="/login" [queryParams]="{ as: 'dr.mehta' }"><mat-icon>stethoscope</mat-icon>Sign in as doctor</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap foot">
+    <span>&copy; {{ year }} CareConnect EHR &middot; Academic project</span>
+    <span>Spring Boot &middot; Angular &middot; Oracle</span>
+  </div>
+</footer>

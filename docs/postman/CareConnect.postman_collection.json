@@ -1,0 +1,3245 @@
+{
+  "info": {
+    "name": "CareConnect EHR API",
+    "description": "Run \"POST /api/auth/login\" first - it stores the tokens in collection variables. Change the username in its body to test other roles (demo password: Password@123).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8090"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "id",
+      "value": "1"
+    },
+    {
+      "key": "patientId",
+      "value": "1"
+    },
+    {
+      "key": "encounterId",
+      "value": "1"
+    },
+    {
+      "key": "code",
+      "value": "1"
+    },
+    {
+      "key": "prescriptionId",
+      "value": "1"
+    },
+    {
+      "key": "userId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "POST /api/auth/login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Log in and receive an access token (15 min) and a refresh token (7 days) (roles: Public)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dr.mehta\",\n  \"password\": \"Password@123\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('tokens issued', () => pm.expect(j.accessToken).to.be.a('string'));",
+                  "pm.collectionVariables.set('accessToken', j.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', j.refreshToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/auth/refresh",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Exchange a refresh token for a new token pair (the old refresh token is revoked) (roles: Public)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('tokens issued', () => pm.expect(j.accessToken).to.be.a('string'));",
+                  "pm.collectionVariables.set('accessToken', j.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', j.refreshToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/auth/logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revoke the given refresh token (roles: Any signed-in user)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/auth/me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Current user profile (roles: Any signed-in user)"
+          }
+        },
+        {
+          "name": "POST /api/auth/change-password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "change-password"
+              ]
+            },
+            "description": "Change own password (signs out other sessions) (roles: Any signed-in user)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Password@123\",\n  \"newPassword\": \"NewPassword1\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "GET /api/dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard"
+              ]
+            },
+            "description": "Stat cards, charts and work list for the logged-in user's role (roles: Any signed-in user)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users & departments",
+      "item": [
+        {
+          "name": "GET /api/departments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/departments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "departments"
+              ]
+            },
+            "description": "List departments (roles: Any signed-in user)"
+          }
+        },
+        {
+          "name": "POST /api/departments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/departments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "departments"
+              ]
+            },
+            "description": "Add a department (roles: Admin)"
+          }
+        },
+        {
+          "name": "PUT /api/departments/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/departments/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "departments",
+                "{{id}}"
+              ]
+            },
+            "description": "Update a department (roles: Admin)"
+          }
+        },
+        {
+          "name": "GET /api/admin/users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users"
+              ]
+            },
+            "description": "List users (admin) (roles: Admin)"
+          }
+        },
+        {
+          "name": "GET /api/admin/users/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "{{id}}"
+              ]
+            },
+            "description": "User details (roles: Admin)"
+          }
+        },
+        {
+          "name": "POST /api/admin/users",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users"
+              ]
+            },
+            "description": "Create a user account (admin) (roles: Admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dr.new\",\n  \"fullName\": \"Dr. New Doctor\",\n  \"role\": \"DOCTOR\",\n  \"departmentId\": 1,\n  \"specialty\": \"General Medicine\",\n  \"password\": \"Welcome123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT /api/admin/users/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "{{id}}"
+              ]
+            },
+            "description": "Update a user (roles: Admin)"
+          }
+        },
+        {
+          "name": "PATCH /api/admin/users/{id}/status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/{{id}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "{{id}}",
+                "status"
+              ]
+            },
+            "description": "Activate or deactivate a user (deactivation ends their sessions) (roles: Admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/admin/users/{id}/reset-password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/{{id}}/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "{{id}}",
+                "reset-password"
+              ]
+            },
+            "description": "Reset a user password (roles: Admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPassword\": \"Welcome123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/users/providers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/providers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "providers"
+              ]
+            },
+            "description": "Doctors directory (for appointments and messaging) (roles: Any signed-in user)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patients",
+      "item": [
+        {
+          "name": "GET /api/patients/{patientId}/documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/documents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "documents"
+              ]
+            },
+            "description": "Patient's documents (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "POST /api/patients/{patientId}/documents",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/documents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "documents"
+              ]
+            },
+            "description": "Upload a lab report, scan or other document (PDF/PNG/JPEG/WEBP/TXT, max 10 MB) (roles: Doctor, Nurse, Receptionist)"
+          }
+        },
+        {
+          "name": "GET /api/documents/{id}/download",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/{{id}}/download",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "documents",
+                "{{id}}",
+                "download"
+              ]
+            },
+            "description": "Download a document (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "DELETE /api/documents/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "documents",
+                "{{id}}"
+              ]
+            },
+            "description": "Delete a document (roles: Doctor, Admin)"
+          }
+        },
+        {
+          "name": "GET /api/patients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients"
+              ]
+            },
+            "description": "Search patients by name, MRN, date of birth or phone (paged, sortable) (roles: Doctor, Nurse, Pharmacist, Receptionist, Admin)"
+          }
+        },
+        {
+          "name": "POST /api/patients",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients"
+              ]
+            },
+            "description": "Register a new patient (an MRN is generated) (roles: Receptionist, Doctor)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Anil\",\n  \"lastName\": \"Sharma\",\n  \"dateOfBirth\": \"1979-02-11\",\n  \"gender\": \"MALE\",\n  \"phone\": \"9811122233\",\n  \"bloodGroup\": \"A+\",\n  \"city\": \"Jaipur\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/patients/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{id}}"
+              ]
+            },
+            "description": "Patient demographics (roles: Doctor, Nurse, Pharmacist, Receptionist)"
+          }
+        },
+        {
+          "name": "PUT /api/patients/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{id}}"
+              ]
+            },
+            "description": "Update demographics (send the last seen 'version' to detect concurrent edits) (roles: Receptionist, Doctor)"
+          }
+        },
+        {
+          "name": "DELETE /api/patients/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{id}}"
+              ]
+            },
+            "description": "Soft-delete a patient record (admin) (roles: Admin)"
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/allergies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/allergies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "allergies"
+              ]
+            },
+            "description": "Allergies (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "POST /api/patients/{patientId}/allergies",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/allergies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "allergies"
+              ]
+            },
+            "description": "Add an allergy (roles: Doctor, Nurse)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"allergen\": \"Sulfa drugs\",\n  \"allergyType\": \"DRUG\",\n  \"reaction\": \"Rash\",\n  \"severity\": \"MODERATE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT /api/allergies/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/allergies/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allergies",
+                "{{id}}"
+              ]
+            },
+            "description": "Update an allergy (roles: Doctor, Nurse)"
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/problems",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/problems",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "problems"
+              ]
+            },
+            "description": "Problem list (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "POST /api/patients/{patientId}/problems",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/problems",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "problems"
+              ]
+            },
+            "description": "Add a problem (roles: Doctor)"
+          }
+        },
+        {
+          "name": "PUT /api/problems/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/problems/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "problems",
+                "{{id}}"
+              ]
+            },
+            "description": "Update a problem (roles: Doctor)"
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/immunizations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/immunizations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "immunizations"
+              ]
+            },
+            "description": "Immunizations (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "POST /api/patients/{patientId}/immunizations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/immunizations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "immunizations"
+              ]
+            },
+            "description": "Add an immunization (roles: Doctor, Nurse)"
+          }
+        },
+        {
+          "name": "PUT /api/immunizations/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/immunizations/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "immunizations",
+                "{{id}}"
+              ]
+            },
+            "description": "Update an immunization (roles: Doctor, Nurse)"
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/family-history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/family-history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "family-history"
+              ]
+            },
+            "description": "Family history (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "POST /api/patients/{patientId}/family-history",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/family-history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "family-history"
+              ]
+            },
+            "description": "Add family history (roles: Doctor, Nurse)"
+          }
+        },
+        {
+          "name": "PUT /api/family-history/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/family-history/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "family-history",
+                "{{id}}"
+              ]
+            },
+            "description": "Update family history (roles: Doctor, Nurse)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clinical documentation",
+      "item": [
+        {
+          "name": "GET /api/icd10",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/icd10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "icd10"
+              ]
+            },
+            "description": "Search ICD-10 codes by code prefix or description (roles: Doctor, Nurse, Pharmacist, Admin)"
+          }
+        },
+        {
+          "name": "POST /api/icd10",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/icd10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "icd10"
+              ]
+            },
+            "description": "Add an ICD-10 code (roles: Admin)"
+          }
+        },
+        {
+          "name": "PUT /api/icd10/{code}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/icd10/{{code}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "icd10",
+                "{{code}}"
+              ]
+            },
+            "description": "Update an ICD-10 code (roles: Admin)"
+          }
+        },
+        {
+          "name": "GET /api/note-templates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/note-templates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "note-templates"
+              ]
+            },
+            "description": "SOAP note templates (roles: Doctor, Nurse, Pharmacist, Admin)"
+          }
+        },
+        {
+          "name": "POST /api/encounters",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/encounters",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "encounters"
+              ]
+            },
+            "description": "Open an encounter (visit) for a patient (roles: Doctor, Nurse)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": 1,\n  \"encounterType\": \"OUTPATIENT\",\n  \"chiefComplaint\": \"Sore throat\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/encounters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/encounters",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "encounters"
+              ]
+            },
+            "description": "Worklist: my encounters (doctor) or all encounters (nurse) with the given status (roles: Doctor, Nurse)"
+          }
+        },
+        {
+          "name": "GET /api/encounters/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/encounters/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "encounters",
+                "{{id}}"
+              ]
+            },
+            "description": "Encounter with notes, diagnoses and vitals (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/encounters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/encounters",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "encounters"
+              ]
+            },
+            "description": "Patient's encounters (paged) (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "POST /api/encounters/{id}/close",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/encounters/{{id}}/close",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "encounters",
+                "{{id}}",
+                "close"
+              ]
+            },
+            "description": "Close an encounter (all notes must be signed) (roles: Doctor)"
+          }
+        },
+        {
+          "name": "POST /api/encounters/{id}/diagnoses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/encounters/{{id}}/diagnoses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "encounters",
+                "{{id}}",
+                "diagnoses"
+              ]
+            },
+            "description": "Add an ICD-10 diagnosis (PRIMARY replaces the current primary) (roles: Doctor)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"icd10Code\": \"J02.9\",\n  \"diagnosisType\": \"PRIMARY\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/diagnoses/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/diagnoses/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "diagnoses",
+                "{{id}}"
+              ]
+            },
+            "description": "Remove a diagnosis from an open encounter (roles: Doctor)"
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/notes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "notes"
+              ]
+            },
+            "description": "Patient's clinical notes (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "POST /api/encounters/{encounterId}/notes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/encounters/{{encounterId}}/notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "encounters",
+                "{{encounterId}}",
+                "notes"
+              ]
+            },
+            "description": "Start a DRAFT SOAP note on an open encounter (roles: Doctor)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"templateCode\": \"GENERAL_OPD\",\n  \"subjective\": \"Sore throat 3 days\",\n  \"objective\": \"Congested pharynx\",\n  \"assessment\": \"Acute pharyngitis\",\n  \"plan\": \"Gargles, review in 5 days\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT /api/notes/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notes/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notes",
+                "{{id}}"
+              ]
+            },
+            "description": "Edit a DRAFT note (author only) (roles: Doctor)"
+          }
+        },
+        {
+          "name": "POST /api/notes/{id}/sign",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notes/{{id}}/sign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notes",
+                "{{id}}",
+                "sign"
+              ]
+            },
+            "description": "Sign a note - it becomes read-only (roles: Doctor)"
+          }
+        },
+        {
+          "name": "POST /api/notes/{id}/addenda",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notes/{{id}}/addenda",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notes",
+                "{{id}}",
+                "addenda"
+              ]
+            },
+            "description": "Add a signed addendum to a signed note (roles: Doctor)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"Add CBC if fever persists\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/patients/{patientId}/vitals",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/vitals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "vitals"
+              ]
+            },
+            "description": "Record vital signs (BMI is calculated automatically) (roles: Doctor, Nurse)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"systolic\": 128,\n  \"diastolic\": 82,\n  \"pulse\": 84,\n  \"temperature\": 37.8,\n  \"spo2\": 98,\n  \"weightKg\": 72,\n  \"heightCm\": 170\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/vitals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/vitals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "vitals"
+              ]
+            },
+            "description": "Vital sign history, oldest first (for trend charts) (roles: Doctor, Nurse, Pharmacist)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders (CPOE) & results",
+      "item": [
+        {
+          "name": "POST /api/orders/check",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/check",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "check"
+              ]
+            },
+            "description": "Run decision support without saving (allergy, interaction, duplicate checks) (roles: Doctor)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": 1,\n  \"orderType\": \"MEDICATION\",\n  \"drugId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/orders",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "description": "Create an order. Returns 409 CDS_ALERTS (with alerts in 'details') when an override reason is needed (roles: Doctor)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": 1,\n  \"encounterId\": 1,\n  \"orderType\": \"MEDICATION\",\n  \"priority\": \"ROUTINE\",\n  \"medication\": {\n    \"drugId\": 1,\n    \"dose\": \"500 mg\",\n    \"route\": \"ORAL\",\n    \"frequency\": \"TDS\",\n    \"durationDays\": 5,\n    \"quantity\": 15\n  },\n  \"overrideReason\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/orders/{id}/place",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{id}}/place",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{id}}",
+                "place"
+              ]
+            },
+            "description": "Place a DRAFT order (runs decision support) (roles: Doctor)"
+          }
+        },
+        {
+          "name": "GET /api/orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "description": "Order worklist with filters (paged) (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "GET /api/orders/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{id}}"
+              ]
+            },
+            "description": "Order with alerts, result and prescription (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "PATCH /api/orders/{id}/status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{id}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{id}}",
+                "status"
+              ]
+            },
+            "description": "Move a lab/imaging/referral order forward (e.g. PLACED -> IN_PROGRESS when the sample is collected) (roles: Doctor, Nurse)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/orders/{id}/cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{id}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{id}}",
+                "cancel"
+              ]
+            },
+            "description": "Cancel an order (reason required) (roles: Doctor)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Ordered in error\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/orders/{id}/results",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{id}}/results",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{id}}",
+                "results"
+              ]
+            },
+            "description": "Enter a lab value or imaging report; the value is flagged against normal/critical ranges (roles: Doctor, Nurse)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"valueNumeric\": 14.2,\n  \"resultStatus\": \"FINAL\",\n  \"comments\": \"Leukocytosis\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "orders"
+              ]
+            },
+            "description": "Patient's orders (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "GET /api/encounters/{encounterId}/orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/encounters/{{encounterId}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "encounters",
+                "{{encounterId}}",
+                "orders"
+              ]
+            },
+            "description": "Encounter's orders (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/lab-results",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/lab-results",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "lab-results"
+              ]
+            },
+            "description": "Patient's lab and imaging results (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "GET /api/lab-tests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lab-tests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lab-tests"
+              ]
+            },
+            "description": "Lab test catalogue (roles: Doctor, Nurse, Pharmacist, Admin)"
+          }
+        },
+        {
+          "name": "POST /api/lab-tests",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lab-tests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lab-tests"
+              ]
+            },
+            "description": "Add a lab test (roles: Admin)"
+          }
+        },
+        {
+          "name": "PUT /api/lab-tests/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lab-tests/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lab-tests",
+                "{{id}}"
+              ]
+            },
+            "description": "Update a lab test (roles: Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Prescriptions & MAR",
+      "item": [
+        {
+          "name": "GET /api/patients/{patientId}/summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "summary"
+              ]
+            },
+            "description": "Chart header: demographics, active allergies, problems, medicines, latest vitals, open encounters (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/mar/due",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/mar/due",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "mar",
+                "due"
+              ]
+            },
+            "description": "Active, verified medicines that can be administered to the patient (roles: Doctor, Nurse)"
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/mar",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/mar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "mar"
+              ]
+            },
+            "description": "Medication administration history (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "POST /api/mar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mar"
+              ]
+            },
+            "description": "Document a dose given / held / refused / missed (roles: Nurse)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prescriptionId\": 1,\n  \"status\": \"GIVEN\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/prescriptions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "prescriptions"
+              ]
+            },
+            "description": "Prescription queue, e.g. status=PENDING_VERIFICATION for the pharmacist (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "GET /api/prescriptions/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/prescriptions/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "prescriptions",
+                "{{id}}"
+              ]
+            },
+            "description": "Prescription with its decision-support alerts and the patient's allergies (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/medications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/medications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "medications"
+              ]
+            },
+            "description": "Medication list of a patient (activeOnly=true for current medicines) (roles: Doctor, Nurse, Pharmacist)"
+          }
+        },
+        {
+          "name": "POST /api/prescriptions/{id}/verify",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/prescriptions/{{id}}/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "prescriptions",
+                "{{id}}",
+                "verify"
+              ]
+            },
+            "description": "Pharmacist verifies a prescription (roles: Pharmacist)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Checked\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/prescriptions/{id}/reject",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/prescriptions/{{id}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "prescriptions",
+                "{{id}}",
+                "reject"
+              ]
+            },
+            "description": "Pharmacist rejects a prescription (reason required) (roles: Pharmacist)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Dose too high\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/prescriptions/{id}/dispense",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/prescriptions/{{id}}/dispense",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "prescriptions",
+                "{{id}}",
+                "dispense"
+              ]
+            },
+            "description": "Dispense a verified prescription (reduces stock) (roles: Pharmacist)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 15\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/prescriptions/{id}/discontinue",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/prescriptions/{{id}}/discontinue",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "prescriptions",
+                "{{id}}",
+                "discontinue"
+              ]
+            },
+            "description": "Doctor stops a medicine (reason required) (roles: Doctor)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Course complete\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/prescriptions/{id}/modify",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/prescriptions/{{id}}/modify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "prescriptions",
+                "{{id}}",
+                "modify"
+              ]
+            },
+            "description": "Change dose/frequency: discontinues this prescription and places a new medication order (roles: Doctor)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drugs & inventory",
+      "item": [
+        {
+          "name": "GET /api/drugs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drugs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drugs"
+              ]
+            },
+            "description": "Search the drug formulary (paged) (roles: Doctor, Nurse, Pharmacist, Admin)"
+          }
+        },
+        {
+          "name": "GET /api/drugs/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drugs/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "{{id}}"
+              ]
+            },
+            "description": "Drug details and stock (roles: Doctor, Nurse, Pharmacist, Admin)"
+          }
+        },
+        {
+          "name": "GET /api/drugs/low-stock",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drugs/low-stock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "low-stock"
+              ]
+            },
+            "description": "Drugs at or below their reorder level (roles: Pharmacist, Admin)"
+          }
+        },
+        {
+          "name": "POST /api/drugs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drugs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drugs"
+              ]
+            },
+            "description": "Add a drug (roles: Pharmacist, Admin)"
+          }
+        },
+        {
+          "name": "PUT /api/drugs/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drugs/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "{{id}}"
+              ]
+            },
+            "description": "Update a drug (roles: Pharmacist, Admin)"
+          }
+        },
+        {
+          "name": "POST /api/drugs/{id}/stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drugs/{{id}}/stock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "{{id}}",
+                "stock"
+              ]
+            },
+            "description": "Receive stock or adjust it (writes an inventory ledger entry) (roles: Pharmacist, Admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"changeQty\": 100,\n  \"txnType\": \"RECEIPT\",\n  \"reference\": \"INV-2026-001\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/drugs/{id}/transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drugs/{{id}}/transactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "{{id}}",
+                "transactions"
+              ]
+            },
+            "description": "Last 50 stock movements (roles: Pharmacist, Admin)"
+          }
+        },
+        {
+          "name": "GET /api/drug-interactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drug-interactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drug-interactions"
+              ]
+            },
+            "description": "Drug-drug interaction table (roles: Doctor, Nurse, Pharmacist, Admin)"
+          }
+        },
+        {
+          "name": "POST /api/drug-interactions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drug-interactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drug-interactions"
+              ]
+            },
+            "description": "Add an interaction (roles: Pharmacist, Admin)"
+          }
+        },
+        {
+          "name": "DELETE /api/drug-interactions/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drug-interactions/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drug-interactions",
+                "{{id}}"
+              ]
+            },
+            "description": "Delete an interaction (roles: Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Scheduling",
+      "item": [
+        {
+          "name": "GET /api/slots",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/slots",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "slots"
+              ]
+            },
+            "description": "A doctor's slots on a date (availableOnly=true for booking) (roles: Receptionist, Doctor, Nurse, Admin)"
+          }
+        },
+        {
+          "name": "POST /api/slots/generate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/slots/generate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "slots",
+                "generate"
+              ]
+            },
+            "description": "Generate availability slots for a doctor over a date range (roles: Receptionist, Doctor, Nurse, Admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerId\": 2,\n  \"date\": \"2026-10-05\",\n  \"untilDate\": \"2026-10-09\",\n  \"startTime\": \"09:00\",\n  \"endTime\": \"13:00\",\n  \"slotMinutes\": 30\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/slots/{id}/block",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/slots/{{id}}/block",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "slots",
+                "{{id}}",
+                "block"
+              ]
+            },
+            "description": "Block a slot (roles: Receptionist, Doctor, Nurse, Admin)"
+          }
+        },
+        {
+          "name": "POST /api/slots/{id}/unblock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/slots/{{id}}/unblock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "slots",
+                "{{id}}",
+                "unblock"
+              ]
+            },
+            "description": "Unblock a slot (roles: Receptionist, Doctor, Nurse, Admin)"
+          }
+        },
+        {
+          "name": "GET /api/appointments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "appointments"
+              ]
+            },
+            "description": "Search appointments (provider, patient, status, date range) (roles: Receptionist, Doctor, Nurse, Admin)"
+          }
+        },
+        {
+          "name": "GET /api/patients/{patientId}/appointments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}/appointments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}",
+                "appointments"
+              ]
+            },
+            "description": "Patient's appointments (roles: Receptionist, Doctor, Nurse, Admin)"
+          }
+        },
+        {
+          "name": "POST /api/appointments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "appointments"
+              ]
+            },
+            "description": "Book an appointment into a free slot (roles: Receptionist, Doctor, Nurse, Admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": 1,\n  \"slotId\": 1,\n  \"appointmentType\": \"IN_PERSON\",\n  \"reason\": \"Follow-up\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/appointments/{id}/cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/{{id}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "appointments",
+                "{{id}}",
+                "cancel"
+              ]
+            },
+            "description": "Cancel an appointment (reason required) (roles: Receptionist, Doctor, Nurse, Admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Patient request\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PATCH /api/appointments/{id}/status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/{{id}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "appointments",
+                "{{id}}",
+                "status"
+              ]
+            },
+            "description": "Check in, complete or mark no-show (roles: Receptionist, Doctor, Nurse, Admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CHECKED_IN\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messaging",
+      "item": [
+        {
+          "name": "GET /api/messages/conversations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/messages/conversations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "messages",
+                "conversations"
+              ]
+            },
+            "description": "My conversations (one per doctor or patient), newest first (roles: Doctor, Patient)"
+          }
+        },
+        {
+          "name": "GET /api/messages/with/{userId}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/messages/with/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "messages",
+                "with",
+                "{{userId}}"
+              ]
+            },
+            "description": "Messages exchanged with one user (marks them read) (roles: Doctor, Patient)"
+          }
+        },
+        {
+          "name": "POST /api/messages",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "messages"
+              ]
+            },
+            "description": "Send a message (patient <-> doctor) (roles: Doctor, Patient)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipientId\": 2,\n  \"subject\": \"Question\",\n  \"body\": \"Doctor, my throat still hurts.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/messages/unread-count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/messages/unread-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "messages",
+                "unread-count"
+              ]
+            },
+            "description": "Unread message count (roles: Doctor, Patient)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "GET /api/notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications"
+              ]
+            },
+            "description": "My notifications (paged) (roles: Any signed-in user)"
+          }
+        },
+        {
+          "name": "GET /api/notifications/unread-count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/unread-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "unread-count"
+              ]
+            },
+            "description": "Unread notification count (roles: Any signed-in user)"
+          }
+        },
+        {
+          "name": "POST /api/notifications/{id}/read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/{{id}}/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "{{id}}",
+                "read"
+              ]
+            },
+            "description": "Mark one notification read (roles: Any signed-in user)"
+          }
+        },
+        {
+          "name": "POST /api/notifications/read-all",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/read-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "read-all"
+              ]
+            },
+            "description": "Mark all notifications read (roles: Any signed-in user)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patient portal",
+      "item": [
+        {
+          "name": "GET /api/portal/profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "profile"
+              ]
+            },
+            "description": "My demographics (roles: Patient)"
+          }
+        },
+        {
+          "name": "GET /api/portal/allergies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/allergies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "allergies"
+              ]
+            },
+            "description": "My allergies (roles: Patient)"
+          }
+        },
+        {
+          "name": "GET /api/portal/problems",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/problems",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "problems"
+              ]
+            },
+            "description": "My conditions (roles: Patient)"
+          }
+        },
+        {
+          "name": "GET /api/portal/medications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/medications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "medications"
+              ]
+            },
+            "description": "My medicines (roles: Patient)"
+          }
+        },
+        {
+          "name": "GET /api/portal/lab-results",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/lab-results",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "lab-results"
+              ]
+            },
+            "description": "My lab results (roles: Patient)"
+          }
+        },
+        {
+          "name": "GET /api/portal/vitals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/vitals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "vitals"
+              ]
+            },
+            "description": "My vitals (roles: Patient)"
+          }
+        },
+        {
+          "name": "GET /api/portal/visits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "visits"
+              ]
+            },
+            "description": "Visit summaries (signed notes only) (roles: Patient)"
+          }
+        },
+        {
+          "name": "GET /api/portal/visits/{encounterId}/pdf",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/visits/{{encounterId}}/pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "visits",
+                "{{encounterId}}",
+                "pdf"
+              ]
+            },
+            "description": "Download a visit summary as PDF (roles: Patient)"
+          }
+        },
+        {
+          "name": "GET /api/portal/prescriptions/{prescriptionId}/pdf",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/prescriptions/{{prescriptionId}}/pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "prescriptions",
+                "{{prescriptionId}}",
+                "pdf"
+              ]
+            },
+            "description": "Download a prescription as PDF (roles: Patient)"
+          }
+        },
+        {
+          "name": "GET /api/portal/appointments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/appointments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "appointments"
+              ]
+            },
+            "description": "My appointments (roles: Patient)"
+          }
+        },
+        {
+          "name": "GET /api/portal/slots",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/slots",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "slots"
+              ]
+            },
+            "description": "Free slots for a doctor on a date (roles: Patient)"
+          }
+        },
+        {
+          "name": "POST /api/portal/appointments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/appointments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "appointments"
+              ]
+            },
+            "description": "Book an appointment (roles: Patient)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slotId\": 1,\n  \"appointmentType\": \"TELEHEALTH\",\n  \"reason\": \"Sugar review\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/portal/appointments/{id}/cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/appointments/{{id}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "portal",
+                "appointments",
+                "{{id}}",
+                "cancel"
+              ]
+            },
+            "description": "Cancel my appointment (roles: Patient)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Travelling\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit",
+      "item": [
+        {
+          "name": "GET /api/admin/audit-logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/audit-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "audit-logs"
+              ]
+            },
+            "description": "Search the audit trail (newest first) (roles: Admin)"
+          }
+        }
+      ]
+    }
+  ]
+}

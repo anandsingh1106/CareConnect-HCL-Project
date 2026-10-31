@@ -1,0 +1,20 @@
+# Automated tests run against an in-memory H2 database in Oracle compatibility mode,
+# using the same Liquibase scripts as the real Oracle database.
+spring:
+  datasource:
+    url: jdbc:h2:mem:careconnect-test;MODE=Oracle;DB_CLOSE_DELAY=-1;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    # Same dialect as production so tests exercise the exact SQL that runs on Oracle
+    # (the H2 dialect adds "escape ''", which Oracle mode turns into NULL and breaks LIKE).
+    database-platform: org.hibernate.community.dialect.OracleLegacyDialect
+
+careconnect:
+  jwt:
+    secret: test-only-careconnect-jwt-secret-0123456789abcdef
+  storage:
+    upload-dir: ${java.io.tmpdir}/careconnect-test-uploads
+  demo-data:
+    enabled: false

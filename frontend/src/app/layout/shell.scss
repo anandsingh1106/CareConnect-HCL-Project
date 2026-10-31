@@ -1,0 +1,89 @@
+.container { height: 100vh; background: var(--cc-bg); }
+
+.sidenav {
+  width: 256px;
+  border-right: none;
+  background: #0d2440;
+  color: #c9d6e6;
+  display: flex;
+  flex-direction: column;
+  --mat-sidenav-container-shape: 0;
+}
+:host ::ng-deep .sidenav .mat-drawer-inner-container { display: flex; flex-direction: column; }
+
+.brand {
+  display: flex; align-items: center; gap: 10px; padding: 20px 20px 16px;
+  color: #fff; text-decoration: none; font-size: 1.3rem; letter-spacing: -.01em;
+  b { color: #5ec8ff; font-weight: 800; }
+}
+.logo {
+  width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
+  background: linear-gradient(135deg, #1a8cff, #0e9f8e);
+  mat-icon { color: #fff; }
+}
+
+nav { flex: 1; overflow-y: auto; padding: 4px 12px 12px; }
+.group-title {
+  font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: #7f93ab;
+  margin: 18px 12px 6px; font-weight: 600;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px;
+  color: #c9d6e6; text-decoration: none; font-size: .93rem; font-weight: 500; margin-bottom: 2px;
+  transition: background .15s, color .15s;
+  mat-icon { font-size: 21px; width: 21px; height: 21px; }
+  &:hover { background: rgba(255, 255, 255, .06); color: #fff; }
+  &.active { background: #1a6fd1; color: #fff; box-shadow: 0 4px 14px rgba(26, 111, 209, .35); }
+}
+.side-footer {
+  display: flex; align-items: center; gap: 8px; padding: 14px 20px; font-size: .78rem; color: #7f93ab;
+  border-top: 1px solid rgba(255, 255, 255, .06);
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
+.content { display: flex; flex-direction: column; }
+.toolbar {
+  position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, .92); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--cc-border); gap: 8px; height: 60px;
+}
+.role-chip { margin-left: 4px; }
+.user-btn { display: flex; align-items: center; gap: 8px; height: 44px; }
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%; display: inline-grid; place-items: center;
+  background: #e3eefa; color: var(--cc-primary); font-weight: 700; font-size: .8rem; margin-right: 8px;
+}
+.user-name { font-weight: 600; }
+main { flex: 1; }
+
+.bell-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; min-width: 340px; }
+.bell-empty { padding: 24px 16px; color: var(--cc-muted); text-align: center; }
+.note { height: auto !important; min-height: 64px; padding-top: 8px !important; padding-bottom: 8px !important; align-items: flex-start !important; }
+.note.unread { background: #f0f6fd; }
+.note-body { white-space: normal; line-height: 1.3; max-width: 290px; }
+.note-title { font-weight: 600; font-size: .9rem; }
+.note-msg { font-size: .82rem; color: var(--cc-muted); }
+.note-time { font-size: .75rem; color: #8a98a8; margin-top: 2px; }
+.user-card { display: flex; flex-direction: column; padding: 10px 16px; gap: 2px; min-width: 220px; }
+
+@media (max-width: 600px) {
+  .user-name, .role-chip { display: none; }
+}
+
+/* Shared shell follows the landing page palette in light and dark modes. */
+.sidenav { background: #efedf0; color: #514659; border-right: 1px solid #e3dfe5; }
+.brand { color: #282521; b { color: #75687a; } }
+.logo { background: #e2dbe5; mat-icon { color: #75687a; } }
+.group-title { color: #817985; }
+.nav-item { color: #5e5762; &:hover { background: rgba(117, 104, 122, .09); color: #282521; } &.active { background: #ded5e2; color: #514659; box-shadow: none; } }
+.side-footer { color: #77716a; border-color: #e3dfe5; }
+.toolbar { background: rgba(255, 255, 255, .88); }
+.avatar { background: #eee9f0; color: #685c70; }
+:host-context(.dark-theme) .sidenav { background: #211f23; color: #e4dce7; border-color: #39343c; }
+:host-context(.dark-theme) .brand { color: #f0ebf1; b { color: #c6b4ce; } }
+:host-context(.dark-theme) .logo { background: #3a3340; mat-icon { color: #d5c4dc; } }
+:host-context(.dark-theme) .group-title, :host-context(.dark-theme) .side-footer { color: #a89fab; border-color: #39343c; }
+:host-context(.dark-theme) .nav-item { color: #d0c8d2; &:hover { background: #302c32; color: #fff; } &.active { background: #413847; color: #f0e6f3; } }
+:host-context(.dark-theme) .toolbar { background: rgba(36, 34, 38, .94); border-color: #3a363d; color: #eeeae7; }
+:host-context(.dark-theme) .avatar { background: #3a3340; color: #decce5; }
+:host-context(.dark-theme) .note.unread { background: #302c32; }
+

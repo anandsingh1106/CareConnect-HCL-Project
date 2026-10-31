@@ -1,0 +1,88 @@
+<div class="page">
+  <div class="page-header">
+    <div><h1>Appointments</h1><p>Book, check in and manage the day's schedule.</p></div>
+    @if (canManageSlots) { <button mat-stroked-button (click)="generate()"><mat-icon>date_range</mat-icon>Generate slots</button> }
+  </div>
+
+  <div class="card toolbar">
+    <mat-form-field subscriptSizing="dynamic" class="prov">
+      <mat-label>Doctor</mat-label>
+      <mat-select [value]="providerId()" (selectionChange)="setProvider($event.value)">
+        @for (p of providers(); track p.id) { <mat-option [value]="p.id">{{ p.fullName }} &middot; {{ p.specialty }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
+    <div class="datenav">
+      <button mat-icon-button (click)="shift(-1)" aria-label="Previous day"><mat-icon>chevron_left</mat-icon></button>
+      <mat-form-field subscriptSizing="dynamic" class="date">
+        <input matInput [matDatepicker]="dp" [value]="date()" (dateChange)="setDate($event.value)" />
+        <mat-datepicker-toggle matSuffix [for]="dp" />
+        <mat-datepicker #dp />
+      </mat-form-field>
+      <button mat-icon-button (click)="shift(1)" aria-label="Next day"><mat-icon>chevron_right</mat-icon></button>
+      <button mat-button (click)="setDate(today())">Today</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <section class="card">
+      <h3 class="card-title">{{ date() | date: 'EEEE, dd MMM yyyy' }} <span class="chip success">{{ freeCount() }} free</span></h3>
+      <div class="legend"><span class="sw AVAILABLE"></span>Free <span class="sw BOOKED"></span>Booked <span class="sw BLOCKED"></span>Blocked</div>
+      <div class="slots">
+        @for (s of slots(); track s.id) {
+          <div class="slot" [class]="'slot ' + s.status" [class.past]="isPast(s)" [class.sel]="selectedSlot()?.id === s.id" (click)="clickSlot(s)">
+            <span>{{ s.slotStart | date: 'HH:mm' }}</span>
+            @if (canManageSlots && s.status !== 'BOOKED' && !isPast(s)) {
+              <button class="blk" (click)="$event.stopPropagation(); toggleBlock(s)" [matTooltip]="s.status === 'BLOCKED' ? 'Unblock' : 'Block'">
+                <mat-icon>{{ s.status === 'BLOCKED' ? 'lock_open' : 'block' }}</mat-icon></button>
+            }
+          </div>
+        } @empty { <p class="muted">No slots for this day. @if (canManageSlots) { Use "Generate slots". }</p> }
+      </div>
+
+      <div class="booking">
+        <h4>Book appointment</h4>
+        @if (bookPatient(); as bp) {
+          <div class="alert-box info"><mat-icon>person</mat-icon><div><strong>{{ bp.fullName }}</strong> ({{ bp.mrn }})</div>
+            <span class="spacer"></span><button mat-button (click)="bookPatient.set(null)">Change</button></div>
+        } @else {
+          <cc-patient-picker (selected)="bookPatient.set($event)" />
+        }
+        <div class="form-grid">
+          <mat-form-field subscriptSizing="dynamic"><mat-label>Type</mat-label>
+            <mat-select [(ngModel)]="bookType"><mat-option value="IN_PERSON">In person</mat-option><mat-option value="TELEHEALTH">Telehealth</mat-option></mat-select></mat-form-field>
+          <mat-form-field subscriptSizing="dynamic"><mat-label>Reason</mat-label><input matInput [(ngModel)]="bookReason" maxlength="500" /></mat-form-field>
+        </div>
+        <button mat-flat-button class="mt" [disabled]="!selectedSlot() || !bookPatient()" (click)="book()">
+          <mat-icon>event_available</mat-icon>{{ selectedSlot() ? 'Book ' + (selectedSlot()!.slotStart | date: 'HH:mm') : 'Select a free slot' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3 class="card-title">Appointments ({{ appointments().length }})</h3>
+      <table class="simple">
+        <tr><th>Time</th><th>Patient</th><th>Reason</th><th>Status</th><th></th></tr>
+        @for (a of appointments(); track a.id) {
+          <tr>
+            <td class="nowrap"><strong>{{ a.startTime | date: 'HH:mm' }}</strong>@if (a.appointmentType === 'TELEHEALTH') { <mat-icon inline matTooltip="Telehealth">videocam</mat-icon> }</td>
+            <td><a [routerLink]="['/patients', a.patientId]">{{ a.patientName }}</a><div class="muted small">{{ a.patientMrn }} &middot; via {{ a.bookedVia | label }}</div></td>
+            <td>{{ a.reason }}@if (a.cancelReason) { <div class="muted small">Cancelled: {{ a.cancelReason }}</div> }</td>
+            <td><cc-status [value]="a.status" /></td>
+            <td class="right nowrap">
+              @if (a.status === 'BOOKED') { <button mat-stroked-button (click)="setStatus(a, 'CHECKED_IN')">Check in</button> }
+              @if (a.status === 'CHECKED_IN' && isDoctor) { <button mat-flat-button (click)="startVisit(a)">Start visit</button> }
+              @if (a.status === 'BOOKED' || a.status === 'CHECKED_IN') {
+                <button mat-icon-button [matMenuTriggerFor]="m"><mat-icon>more_vert</mat-icon></button>
+                <mat-menu #m="matMenu">
+                  @if (a.status === 'CHECKED_IN') { <button mat-menu-item (click)="setStatus(a, 'COMPLETED')"><mat-icon>task_alt</mat-icon>Mark completed</button> }
+                  @if (a.status === 'BOOKED') { <button mat-menu-item (click)="setStatus(a, 'NO_SHOW')"><mat-icon>person_off</mat-icon>No-show</button> }
+                  <button mat-menu-item (click)="cancel(a)"><mat-icon>event_busy</mat-icon>Cancel</button>
+                </mat-menu>
+              }
+            </td>
+          </tr>
+        } @empty { <tr><td colspan="5" class="muted">No appointments on this day.</td></tr> }
+      </table>
+    </section>
+  </div>
+</div>
